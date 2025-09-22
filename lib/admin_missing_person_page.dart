@@ -3,6 +3,7 @@ import '../models/missing_person.dart';
 
 class AdminMissingPersonPage extends StatefulWidget {
   final List<MissingPerson> persons;
+
   const AdminMissingPersonPage({super.key, required this.persons});
 
   @override
@@ -11,27 +12,6 @@ class AdminMissingPersonPage extends StatefulWidget {
 }
 
 class _AdminMissingPersonPageState extends State<AdminMissingPersonPage> {
-  late List<MissingPerson> _persons;
-
-  @override
-  void initState() {
-    super.initState();
-    _persons = widget.persons;
-  }
-
-  void _markAsFound(String id) {
-    setState(() {
-      _persons.removeWhere((p) => p.id == id);
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Marked as Found ✅"),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +35,7 @@ class _AdminMissingPersonPageState extends State<AdminMissingPersonPage> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: _persons.isEmpty
+        child: widget.persons.isEmpty
             ? const Center(
                 child: Text(
                   "🎉 No Missing Persons Reported!",
@@ -68,9 +48,9 @@ class _AdminMissingPersonPageState extends State<AdminMissingPersonPage> {
               )
             : ListView.builder(
                 padding: const EdgeInsets.all(12),
-                itemCount: _persons.length,
+                itemCount: widget.persons.length,
                 itemBuilder: (context, index) {
-                  final person = _persons[index];
+                  final person = widget.persons[index];
                   return Card(
                     elevation: 6,
                     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -81,7 +61,7 @@ class _AdminMissingPersonPageState extends State<AdminMissingPersonPage> {
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
                       leading: CircleAvatar(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: person.isFound ? Colors.green : Colors.teal,
                         child: Text(
                           person.name[0].toUpperCase(),
                           style: const TextStyle(
@@ -105,19 +85,43 @@ class _AdminMissingPersonPageState extends State<AdminMissingPersonPage> {
                             Text("Last Seen: ${person.lastSeen}"),
                             Text("Family: ${person.familyName}"),
                             Text("Contact: ${person.familyContact}"),
+                            const SizedBox(height: 4),
+                            Chip(
+                              label: Text(
+                                person.isFound ? "Found" : "Missing",
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              backgroundColor: person.isFound
+                                  ? Colors.green
+                                  : Colors.redAccent,
+                            ),
                           ],
                         ),
                       ),
                       trailing: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
+                          backgroundColor:
+                              person.isFound ? Colors.grey : Colors.redAccent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () => _markAsFound(person.id),
-                        icon: const Icon(Icons.check_circle, color: Colors.white),
-                        label: const Text("Found"),
+                        onPressed: () {
+                          setState(() {
+                            widget.persons.remove(person); // admin can delete found person
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Person removed ✅"),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.delete, color: Colors.white),
+                        label: const Text("Delete"),
                       ),
                     ),
                   );

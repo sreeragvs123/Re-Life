@@ -42,14 +42,19 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     }
   }
 
-  Future<void> captureFromCamera() async {
-    if (kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Camera capture not supported on Web")),
-      );
-      return;
+Future<void> captureFromCamera() async {
+  if (kIsWeb) {
+    // Web: pick image from files
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+    if (result != null && result.files.single.bytes != null) {
+      setState(() {
+        attachment = result.files.single.bytes;
+      });
     }
-
+  } else {
+    // Mobile: use camera
     final XFile? file = await _picker.pickImage(
       source: ImageSource.camera,
       maxWidth: 1920,
@@ -63,6 +68,8 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
       });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

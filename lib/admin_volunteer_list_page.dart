@@ -1,10 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'admin_assign_task_page.dart';
-import 'data/volunteer_data.dart'; // still needed for groupTasks
+import '../data/volunteer_data.dart'; // For groupTasks
+import '../models/volunteer.dart';
 
-class AdminVolunteerListPage extends StatelessWidget {
+// Dummy volunteers list
+final List<Volunteer> dummyVolunteers = [
+  Volunteer(
+      name: 'Amit Sharma',
+      place: 'Delhi',
+      email: 'amit.sharma@example.com',
+      password: '123456'),
+  Volunteer(
+      name: 'Priya Singh',
+      place: 'Mumbai',
+      email: 'priya.singh@example.com',
+      password: '123456'),
+  Volunteer(
+      name: 'Rahul Verma',
+      place: 'Delhi',
+      email: 'rahul.verma@example.com',
+      password: '123456'),
+  Volunteer(
+      name: 'Sneha Kapoor',
+      place: 'Bangalore',
+      email: 'sneha.kapoor@example.com',
+      password: '123456'),
+  Volunteer(
+      name: 'Ankit Jain',
+      place: 'Mumbai',
+      email: 'ankit.jain@example.com',
+      password: '123456'),
+  Volunteer(
+      name: 'Riya Mehra',
+      place: 'Bangalore',
+      email: 'riya.mehra@example.com',
+      password: '123456'),
+];
+
+class AdminVolunteerListPage extends StatefulWidget {
   const AdminVolunteerListPage({super.key});
+
+  @override
+  State<AdminVolunteerListPage> createState() =>
+      _AdminVolunteerListPageState();
+}
+
+class _AdminVolunteerListPageState extends State<AdminVolunteerListPage> {
+  late Box volunteersBox;
+
+  @override
+  void initState() {
+    super.initState();
+    volunteersBox = Hive.box('volunteersBox');
+
+    // Add dummy volunteers to Hive if box is empty
+    if (volunteersBox.isEmpty) {
+      for (var v in dummyVolunteers) {
+        volunteersBox.add({
+          'name': v.name,
+          'place': v.place,
+          'email': v.email,
+          'password': v.password,
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +76,7 @@ class AdminVolunteerListPage extends StatelessWidget {
         backgroundColor: Colors.teal,
       ),
       body: ValueListenableBuilder(
-        valueListenable: Hive.box('volunteersBox').listenable(),
+        valueListenable: volunteersBox.listenable(),
         builder: (context, box, _) {
           if (box.isEmpty) {
             return const Center(
@@ -63,12 +125,10 @@ class AdminVolunteerListPage extends StatelessWidget {
                       color: Colors.teal,
                     ),
                   ),
-                  childrenPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                  childrenPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   children: [
-                    // Volunteers shown as chips
+                    // Volunteers as chips
                     Wrap(
                       spacing: 6,
                       runSpacing: -8,
@@ -131,15 +191,14 @@ class AdminVolunteerListPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
+                            horizontal: 20, vertical: 12),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => AdminAssignTaskPage(place: place),
+                            builder: (_) =>
+                                AdminAssignTaskPage(place: place),
                           ),
                         );
                       },

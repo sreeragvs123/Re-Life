@@ -31,7 +31,8 @@ class _MissingPersonListPageState extends State<MissingPersonListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Missing Persons", style: TextStyle(color: Colors.teal)),
+        title:
+            const Text("Missing Persons", style: TextStyle(color: Colors.teal)),
         centerTitle: true,
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.teal),
@@ -62,7 +63,8 @@ class _MissingPersonListPageState extends State<MissingPersonListPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 6,
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
                     shadowColor: Colors.black38,
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(12),
@@ -98,7 +100,9 @@ class _MissingPersonListPageState extends State<MissingPersonListPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              backgroundColor: person.isFound ? Colors.green : Colors.redAccent,
+                              backgroundColor: person.isFound
+                                  ? Colors.green
+                                  : Colors.redAccent,
                             ),
                           ],
                         ),
@@ -106,7 +110,8 @@ class _MissingPersonListPageState extends State<MissingPersonListPage> {
                       trailing: ElevatedButton(
                         onPressed: () => _toggleFound(person),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: person.isFound ? Colors.orange : Colors.green,
+                          backgroundColor:
+                              person.isFound ? Colors.orange : Colors.green,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -118,10 +123,18 @@ class _MissingPersonListPageState extends State<MissingPersonListPage> {
                         ),
                       ),
                       onTap: () {
+                        // Open detail page with callback
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => MissingPersonDetailPage(person: person),
+                            builder: (_) => MissingPersonDetailPage(
+                              person: person,
+                              onMarkedFound: () {
+                                setState(() {
+                                  person.isFound = true;
+                                });
+                              },
+                            ),
                           ),
                         );
                       },

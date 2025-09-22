@@ -8,8 +8,11 @@ class VideoGalleryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only approved videos
+    final approvedVideos = videos.where((v) => v.status == 'approved').toList();
+
     return Scaffold(
-      backgroundColor: Colors.black, // YouTube-like dark background
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
@@ -19,75 +22,37 @@ class VideoGalleryPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 2 per row
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 16 / 12, // force 16:9-ish thumbnail box
-          ),
-          itemCount: videos.length,
-          itemBuilder: (context, index) {
-            final video = videos[index];
-
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => VideoPlayerPage(video: video),
-                  ),
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(12),
+        child: approvedVideos.isEmpty
+            ? const Center(
+                child: Text(
+                  "No videos available yet.",
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ✅ Force same thumbnail size for all
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9, // fixed preview ratio
-                        child: VideoCard(
-                          video: video,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => VideoPlayerPage(video: video),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // ✅ Title under video
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        video.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+              )
+            : GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 per row
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 16 / 9, // keeps VideoCard ratio
                 ),
+                itemCount: approvedVideos.length,
+                itemBuilder: (context, index) {
+                  final video = approvedVideos[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VideoPlayerPage(video: video),
+                        ),
+                      );
+                    },
+                    child: VideoCard(video: video, onTap: () {}),
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }

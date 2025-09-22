@@ -44,44 +44,29 @@ class _VolunteerDonationPageState extends State<VolunteerDonationPage> {
         donationsList.where((d) => d.isApproved).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Volunteer: Update Donation Status")),
+      appBar: AppBar(title: const Text("Volunteer: Update Status")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: approvedDonations.isEmpty
-            ? const Center(
-                child: Text(
-                  "No approved donations yet",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              )
+            ? const Center(child: Text("No approved donations"))
             : ListView.builder(
                 itemCount: approvedDonations.length,
                 itemBuilder: (context, index) {
                   final donation = approvedDonations[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 3,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            donation.item,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
+                          Text(donation.item,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                           Text("Quantity: ${donation.quantity}"),
-                          const SizedBox(height: 4),
                           Text("Donor: ${donation.donorName}"),
                           Text("Contact: ${donation.contact}"),
-                          Text("Address: ${donation.address ?? "N/A"}"),
+                          Text("Address: ${donation.address}"),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -103,17 +88,15 @@ class _VolunteerDonationPageState extends State<VolunteerDonationPage> {
                               DropdownButton<String>(
                                 value: donation.status,
                                 items: statusOptions
-                                    .map((status) => DropdownMenuItem(
-                                          value: status,
-                                          child: Text(status),
-                                        ))
+                                    .map((e) =>
+                                        DropdownMenuItem(value: e, child: Text(e)))
                                     .toList(),
-                                onChanged: (value) {
-                                  if (value != null) _updateStatus(donation, value);
+                                onChanged: (val) {
+                                  if (val != null) _updateStatus(donation, val);
                                 },
-                              ),
+                              )
                             ],
-                          ),
+                          )
                         ],
                       ),
                     ),

@@ -3,16 +3,7 @@ import '../data/donation_data.dart';
 import '../models/donation.dart';
 
 class UserDonationPage extends StatefulWidget {
-  final String userName;
-  final String userContact;
-  final String userAddress;
-
-  const UserDonationPage({
-    super.key,
-    required this.userName,
-    required this.userContact,
-    required this.userAddress,
-  });
+  const UserDonationPage({super.key, required String userAddress, required String userContact, required String userName});
 
   @override
   State<UserDonationPage> createState() => _UserDonationPageState();
@@ -24,15 +15,6 @@ class _UserDonationPageState extends State<UserDonationPage> {
   final _addressController = TextEditingController();
   final _itemController = TextEditingController();
   final _quantityController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // Pre-fill with user info but editable
-    _nameController.text = widget.userName;
-    _contactController.text = widget.userContact;
-    _addressController.text = widget.userAddress;
-  }
 
   void _submitDonation() {
     if (_nameController.text.isEmpty ||
@@ -46,32 +28,30 @@ class _UserDonationPageState extends State<UserDonationPage> {
       return;
     }
 
+    final donation = Donation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      donorName: _nameController.text,
+      contact: _contactController.text,
+      address: _addressController.text,
+      item: _itemController.text,
+      quantity: int.tryParse(_quantityController.text) ?? 0, 
+      date: DateTime.now(),
+    );
+
     setState(() {
-      donationsList.add(
-        Donation(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          donorName: _nameController.text,
-          contact: _contactController.text,
-          address: _addressController.text,
-          item: _itemController.text,
-          quantity: int.tryParse(_quantityController.text) ?? 0,
-          date: DateTime.now(),
-          isApproved: false,
-          status: "Pending",
-        ),
-      );
+      donationsList.add(donation);
     });
 
-    // clear only product fields
     _itemController.clear();
     _quantityController.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Donation submitted! Waiting for admin approval.")),
+      const SnackBar(
+          content: Text("Donation submitted! Waiting for admin approval.")),
     );
   }
 
-  Color _statusColor(String status) {
+  Color _getStatusColor(String status) {
     switch (status) {
       case "Pending":
         return Colors.orange;
@@ -88,25 +68,17 @@ class _UserDonationPageState extends State<UserDonationPage> {
 
   @override
   Widget build(BuildContext context) {
-    // User-specific donations
-    final userDonations = donationsList
-        .where((d) =>
-            d.donorName == widget.userName &&
-            d.contact == widget.userContact)
-        .toList();
-
-    // All delivered donations (public view)
-    final deliveredDonations =
-        donationsList.where((d) => d.status == "Delivered").toList();
+    final approvedDonations =
+        donationsList.where((d) => d.isApproved).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Donate a Product")),
+      appBar: AppBar(title: const Text("Donate & My Donations")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // ---------- Donation Form ----------
+              // User info
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -156,83 +128,41 @@ class _UserDonationPageState extends State<UserDonationPage> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // ---------- User Donations ----------
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Your Donations",
+                  "Approved Donations",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 10),
-              userDonations.isEmpty
-                  ? const Text(
-                      "No donations yet",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    )
+              approvedDonations.isEmpty
+                  ? const Text("No approved donations yet.")
                   : ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: userDonations.length,
+                      itemCount: approvedDonations.length,
                       itemBuilder: (context, index) {
-                        final donation = userDonations[index];
+                        final donation = approvedDonations[index];
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 6),
                           child: ListTile(
-                            title: Text(
-                              donation.item,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18),
-                            ),
+                            title: Text(donation.item),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("Quantity: ${donation.quantity}"),
                                 Text(
+                                    "Date: ${donation.date.toLocal().toString().split('.')[0]}"),
+                                Text(
                                   "Status: ${donation.status}",
                                   style: TextStyle(
-                                    color: _statusColor(donation.status),
                                     fontWeight: FontWeight.bold,
+                                    color: _getStatusColor(donation.status),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        );
-                      },
-                    ),
-              const SizedBox(height: 30),
-
-              // ---------- Public Delivered Donations ----------
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Delivered Donations (Public List)",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 10),
-              deliveredDonations.isEmpty
-                  ? const Text(
-                      "No donations delivered yet",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: deliveredDonations.length,
-                      itemBuilder: (context, index) {
-                        final donation = deliveredDonations[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            title: Text(
-                              donation.item,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18),
-                            ),
-                            subtitle: Text("Quantity: ${donation.quantity}"),
                           ),
                         );
                       },

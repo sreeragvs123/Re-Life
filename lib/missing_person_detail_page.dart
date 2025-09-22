@@ -3,8 +3,13 @@ import 'models/missing_person.dart';
 
 class MissingPersonDetailPage extends StatelessWidget {
   final MissingPerson person;
+  final VoidCallback onMarkedFound; // Callback to notify parent/admin
 
-  const MissingPersonDetailPage({super.key, required this.person});
+  const MissingPersonDetailPage({
+    super.key,
+    required this.person,
+    required this.onMarkedFound,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,8 @@ class MissingPersonDetailPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 6,
             color: Colors.white.withOpacity(0.95),
             child: Padding(
@@ -37,7 +43,8 @@ class MissingPersonDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Age: ${person.age}",
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text("Description: ${person.description}"),
                   const SizedBox(height: 8),
@@ -49,7 +56,8 @@ class MissingPersonDetailPage extends StatelessWidget {
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -57,11 +65,16 @@ class MissingPersonDetailPage extends StatelessWidget {
                     icon: const Icon(Icons.visibility),
                     label: const Text("I saw this person"),
                     onPressed: () {
+                      // Call the parent callback to mark as found
+                      onMarkedFound();
+
+                      // Show confirmation dialog
                       showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
-                          title: const Text("Contact Family"),
-                          content: Text("Please contact: ${person.familyContact}"),
+                          title: const Text("Thank you!"),
+                          content: Text(
+                              "The family (${person.familyName}) has been notified."),
                           actions: [
                             TextButton(
                               child: const Text("OK"),

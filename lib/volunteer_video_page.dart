@@ -21,88 +21,98 @@ class VolunteerVideoPage extends StatefulWidget {
 class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
   bool _isUploading = false;
 
-  Future<void> pickVideo() async {
-    setState(() => _isUploading = true);
+Future<void> pickVideo() async {
+  setState(() => _isUploading = true);
 
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.video,
-        withData: true,
-      );
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+      withData: true,
+    );
 
-      if (result != null) {
-        String title = result.files.single.name;
-        Video newVideo;
+    if (result != null) {
+      String title = result.files.single.name;
+      Video newVideo;
 
-        if (kIsWeb && result.files.single.bytes != null) {
-          newVideo = Video(
-            id: DateTime.now().toString(),
-            title: title,
-            bytes: result.files.single.bytes,
-          );
-        } else if (!kIsWeb && result.files.single.path != null) {
-          File pickedFile = File(result.files.single.path!);
-          Directory appDir = await getApplicationDocumentsDirectory();
-          String newPath = '${appDir.path}/$title';
-          File savedFile = await pickedFile.copy(newPath);
+      if (kIsWeb && result.files.single.bytes != null) {
+        // Web: use bytes, path & thumbnail = null
+        newVideo = Video(
+          id: DateTime.now().toString(),
+          title: title,
+          bytes: result.files.single.bytes,
+          status: 'pending',
+          path: null,
+          thumbnail: null,
+        );
+      } else if (!kIsWeb && result.files.single.path != null) {
+        // Mobile: use file path & thumbnail, bytes = null
+        File pickedFile = File(result.files.single.path!);
+        Directory appDir = await getApplicationDocumentsDirectory();
+        String newPath = '${appDir.path}/$title';
+        File savedFile = await pickedFile.copy(newPath);
 
-          // Generate thumbnail
-          Uint8List? thumb = await VideoThumbnail.thumbnailData(
-            video: savedFile.path,
-            imageFormat: ImageFormat.JPEG,
-            maxHeight: 150,
-            quality: 75,
-          );
+        // Generate thumbnail
+        Uint8List? thumb = await VideoThumbnail.thumbnailData(
+          video: savedFile.path,
+          imageFormat: ImageFormat.JPEG,
+          maxHeight: 150,
+          quality: 75,
+        );
 
-          newVideo = Video(
-            id: DateTime.now().toString(),
-            title: title,
-            path: savedFile.path,
-            thumbnail: thumb,
-          );
-        } else {
-          throw Exception("Unable to get video data.");
-        }
-
-        setState(() {
-          videos.add(newVideo);
-          _isUploading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green.shade600,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(child: Text("Video '$title' uploaded successfully!")),
-              ],
-            ),
-          ),
+        newVideo = Video(
+          id: DateTime.now().toString(),
+          title: title,
+          path: savedFile.path,
+          thumbnail: thumb,
+          status: 'pending',
+          bytes: null,
         );
       } else {
-        setState(() => _isUploading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No video selected.")),
-        );
+        throw Exception("Unable to get video data.");
       }
-    } catch (e) {
-      setState(() => _isUploading = false);
+
+      setState(() {
+        videos.add(newVideo);
+        _isUploading = false;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.red.shade600,
+          backgroundColor: Colors.green.shade600,
           content: Row(
             children: [
-              const Icon(Icons.error, color: Colors.white),
+              const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 8),
-              Expanded(child: Text("Video upload failed: $e")),
+              Expanded(
+                  child: Text(
+                      "Video '$title' uploaded successfully! Pending admin approval.")),
             ],
           ),
         ),
       );
+    } else {
+      setState(() => _isUploading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No video selected.")),
+      );
     }
+  } catch (e) {
+    setState(() => _isUploading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade600,
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text("Video upload failed: $e")),
+          ],
+        ),
+      ),
+    );
   }
+}
+
 
   void playVideo(Video video) {
     Navigator.push(
@@ -113,8 +123,9 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final approvedVideos = videos.where((v) => v.status == 'approved').toList();
+
     return Scaffold(
-      // Gradient appbar
       appBar: AppBar(
         title: const Text("Volunteer Videos"),
         centerTitle: true,
@@ -149,7 +160,7 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
           if (_isUploading)
             const LinearProgressIndicator(minHeight: 5, color: Colors.deepPurple),
           Expanded(
-            child: videos.isEmpty
+            child: approvedVideos.isEmpty
                 ? const Center(
                     child: Text(
                       "No videos uploaded yet.",
@@ -164,17 +175,14 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
                             childAspectRatio: 0.9),
-                    itemCount: videos.length,
+                    itemCount: approvedVideos.length,
                     itemBuilder: (context, index) {
                       return GestureDetector(
-                        onTap: () => playVideo(videos[index]),
+                        onTap: () => playVideo(approvedVideos[index]),
                         child: VideoCard(
-  video: videos[index],
-  onTap: () {
-   
-  },
-),
-
+                          video: approvedVideos[index],
+                          onTap: () {},
+                        ),
                       );
                     },
                   ),
@@ -231,7 +239,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Gradient AppBar
       appBar: AppBar(
         title: Text(widget.video.title),
         flexibleSpace: Container(

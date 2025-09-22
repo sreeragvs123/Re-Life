@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:video_app/volunteer_blood_page.dart';
 import 'package:video_app/volunteer_donation_page.dart';
+import 'package:video_app/volunteer_report_page.dart';
 import 'package:video_app/volunteer_video_page.dart';
 
 import 'widgets/function_card.dart';
@@ -114,22 +115,21 @@ class _VolunteerHomeState extends State<VolunteerHome>
         title: Text("Volunteer Dashboard ($volunteerName)"),
         actions: [
           // ✅ Role dropdown menu
-      Builder(
-  builder: (context) {
-    var box = Hive.box('authBox');
-    String? role = box.get('role');
+          Builder(
+            builder: (context) {
+              var box = Hive.box('authBox');
+              String? role = box.get('role');
 
-    if (role == "ADMIN") {
-      // Admin can go to AdminHome, UserHome, and VolunteerHome (as special volunteer)
-      return _roleSwitcher(context, ["admin", "user", "volunteer"]);
-    } else if (role == "VOLUNTEER") {
-      // Volunteer can go to UserHome or VolunteerHome (their real data)
-      return _roleSwitcher(context, ["user", "volunteer"]);
-    }
-    return const SizedBox(); // Guest / no role: nothing
-  },
-),
-
+              if (role == "ADMIN") {
+                // Admin can go to AdminHome, UserHome, and VolunteerHome (as special volunteer)
+                return _roleSwitcher(context, ["admin", "user", "volunteer"]);
+              } else if (role == "VOLUNTEER") {
+                // Volunteer can go to UserHome or VolunteerHome (their real data)
+                return _roleSwitcher(context, ["user", "volunteer"]);
+              }
+              return const SizedBox(); // Guest / no role: nothing
+            },
+          ),
 
           // ✅ Sign Out
           TextButton(
@@ -156,10 +156,7 @@ class _VolunteerHomeState extends State<VolunteerHome>
                 end: Alignment.topCenter,
               ).createShader(rect),
               blendMode: BlendMode.darken,
-              child: Image.network(
-                'https://media.istockphoto.com/id/872576234/photo/rescue.jpg?s=612x612&w=0&k=20&c=53Sskdnw4l3O_Wvx6sIcvveWwSxBxT1X-kkrZg-W9Cw=',
-                fit: BoxFit.cover,
-              ),
+             
             ),
           ),
 
@@ -259,7 +256,8 @@ class _VolunteerHomeState extends State<VolunteerHome>
                       color: Colors.white.withOpacity(0.35),
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const VolunteerDonationPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const VolunteerDonationPage()),
                       ),
                     ),
                   ),
@@ -299,20 +297,22 @@ class _VolunteerHomeState extends State<VolunteerHome>
                 _buildAnimatedCard(
   7,
   HoverCard(
-    child:FunctionCard(
-    title: "Donations ($totalDonations)",
-    icon: Icons.volunteer_activism,
-    color: Colors.white.withOpacity(0.35),
-    onTap: () async {
-      // Open AdminDonationPage or VolunteerDonationPage depending on role
-      await Navigator.push(
+    child: FunctionCard(
+      title: "Volunteer Report",
+      icon: Icons.report, // report icon
+      color: Colors.white.withOpacity(0.35),
+      onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const VolunteerDonationPage()),
-      );
-      setState(() {}); // Refresh donations badge
-    },
-  )),
+        MaterialPageRoute(
+          builder: (_) => VolunteerReportPage(
+            volunteerName: "Your Volunteer Name", // pass logged-in volunteer name
+          ),
+        ),
+      ),
+    ),
+  ),
 ),
+
               ],
             ),
           ),

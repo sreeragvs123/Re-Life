@@ -10,14 +10,11 @@ import 'shelter_list_page.dart';
 import 'product_list_page.dart';
 import 'missing_person_list_page.dart';
 import 'data/missing_person_data.dart';
-import 'user_donation_page.dart';
 import 'data/donation_data.dart';
 import 'video_gallery_page.dart';
 import 'report_issue_page.dart';
 import 'volunteer_registration_page.dart';
-import 'evacuation_map_page.dart';
 import 'login_page.dart';
-import 'signup_page.dart';
 import 'admin_home.dart';
 import 'volunteer_home.dart';
 import 'models/volunteer.dart';
@@ -33,7 +30,7 @@ class _UserHomeState extends State<UserHome>
     with SingleTickerProviderStateMixin {
   bool hasNewIssue = false;
   late AnimationController _controller;
-  String? role; // "ADMIN" / "VOLUNTEER" / "USER" / null (guest)
+  String? role;
 
   @override
   void initState() {
@@ -47,14 +44,14 @@ class _UserHomeState extends State<UserHome>
   void _loadRole() {
     var box = Hive.box('authBox');
     setState(() {
-      role = box.get('role'); // get logged-in role
+      role = box.get('role');
     });
   }
 
   void _signOut() {
     var box = Hive.box('authBox');
     box.put('isLoggedIn', false);
-    box.put('role', null); // set role to null for guest
+    box.put('role', null);
     box.delete('email');
 
     Navigator.pushReplacement(
@@ -69,32 +66,61 @@ class _UserHomeState extends State<UserHome>
     super.dispose();
   }
 
+  // Animated gradient background
+  Widget _buildAnimatedBackground() {
+    return AnimatedContainer(
+      duration: const Duration(seconds: 5),
+      onEnd: () {
+        setState(() {}); // triggers rebuild for gradient loop
+      },
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.blueAccent,
+          ]..shuffle(), // shuffle for subtle animation
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalDonations = donationsList.fold(0, (sum, d) => sum + d.quantity);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black.withOpacity(0.6),
-        elevation: 0,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        elevation: 8,
+        shadowColor: Colors.deepPurpleAccent,
         title: Text(
           "Disaster Relief Hub",
-          style: GoogleFonts.bebasNeue(fontSize: 28, letterSpacing: 1.2),
+          style: GoogleFonts.bebasNeue(
+            fontSize: 28,
+            letterSpacing: 1.2,
+            color: Colors.white,
+          ),
         ),
         actions: [
+          // account switcher
           if (role == "ADMIN" || role == "VOLUNTEER")
             PopupMenuButton<String>(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               icon: const Icon(Icons.switch_account, color: Colors.white),
               onSelected: (value) {
                 if (value == "admin") {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => const AdminHome()),
+                    _createRoute(const AdminHome()),
                   );
                 } else if (value == "user") {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => const UserHome()),
+                    _createRoute(const UserHome()),
                   );
                 } else if (value == "volunteer") {
                   Volunteer volunteerToOpen;
@@ -128,9 +154,7 @@ class _UserHomeState extends State<UserHome>
 
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => VolunteerHome(volunteer: volunteerToOpen),
-                    ),
+                    _createRoute(VolunteerHome(volunteer: volunteerToOpen)),
                   );
                 }
               },
@@ -156,7 +180,7 @@ class _UserHomeState extends State<UserHome>
             TextButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
+                _createRoute(const LoginPage()),
               ),
               child: const Text("Login", style: TextStyle(color: Colors.white)),
             ),
@@ -168,20 +192,7 @@ class _UserHomeState extends State<UserHome>
       ),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: ShaderMask(
-              shaderCallback: (rect) => LinearGradient(
-                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-              ).createShader(rect),
-              blendMode: BlendMode.darken,
-              child: Image.network(
-                'https://media.istockphoto.com/id/872576234/photo/rescue.jpg?s=612x612&w=0&k=20&c=53Sskdnw4l3O_Wvx6sIcvveWwSxBxT1X-kkrZg-W9Cw=',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          _buildAnimatedBackground(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: GridView.count(
@@ -195,11 +206,9 @@ class _UserHomeState extends State<UserHome>
                   FunctionCard(
                     title: "Shelters",
                     icon: Icons.home,
-                    color: Colors.white.withOpacity(0.35),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ShelterListPage()),
-                    ),
+                    color: Colors.white,
+                    onTap: () =>
+                        Navigator.push(context, _createRoute(const ShelterListPage())),
                   ),
                 ),
                 _buildAnimatedCard(
@@ -207,27 +216,23 @@ class _UserHomeState extends State<UserHome>
                   FunctionCard(
                     title: "Required Products",
                     icon: Icons.shopping_cart,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => ProductListPage(canAdd: false)),
+                      _createRoute(ProductListPage(canAdd: false)),
                     ),
                   ),
                 ),
-                
                 _buildAnimatedCard(
                   2,
                   FunctionCard(
                     title: "Missing Persons",
                     icon: Icons.person_search,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            MissingPersonListPage(persons: sampleMissingPersons),
-                      ),
+                      _createRoute(
+                          MissingPersonListPage(persons: sampleMissingPersons)),
                     ),
                   ),
                 ),
@@ -236,7 +241,7 @@ class _UserHomeState extends State<UserHome>
                   FunctionCard(
                     title: "Report an Issue",
                     icon: Icons.report_problem,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     badge: hasNewIssue
                         ? Container(
                             width: 14,
@@ -244,13 +249,20 @@ class _UserHomeState extends State<UserHome>
                             decoration: const BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.redAccent,
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                )
+                              ],
                             ),
                           )
                         : null,
                     onTap: () async {
                       final submitted = await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const ReportIssuePage()),
+                        _createRoute(const ReportIssuePage()),
                       );
                       if (submitted == true) {
                         setState(() => hasNewIssue = true);
@@ -258,17 +270,15 @@ class _UserHomeState extends State<UserHome>
                     },
                   ),
                 ),
-                
                 _buildAnimatedCard(
                   4,
                   FunctionCard(
                     title: "Volunteer Registration",
                     icon: Icons.group_add,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const VolunteerRegistrationPage()),
+                      _createRoute(const VolunteerRegistrationPage()),
                     ),
                   ),
                 ),
@@ -277,10 +287,10 @@ class _UserHomeState extends State<UserHome>
                   FunctionCard(
                     title: "Videos",
                     icon: Icons.video_library,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const VideoGalleryPage()),
+                      _createRoute(const VideoGalleryPage()),
                     ),
                   ),
                 ),
@@ -289,41 +299,39 @@ class _UserHomeState extends State<UserHome>
                   FunctionCard(
                     title: "Blood Donation",
                     icon: Icons.bloodtype,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const UserBloodPage()),
+                      _createRoute(const UserBloodPage()),
                     ),
                   ),
-                ),_buildAnimatedCard(
-  7,
-  FunctionCard(
-    title: "Donations ($totalDonations)",
-    icon: Icons.volunteer_activism,
-    color: Colors.white.withOpacity(0.35),
-    onTap: () async {
-  var box = Hive.box('authBox'); // or wherever you store logged-in user info
-  String userName = box.get('name') ?? "Guest";
-  String userContact = box.get('contact') ?? "N/A";
-  String userAddress = box.get('address') ?? "N/A";
+                ),
+                _buildAnimatedCard(
+                  7,
+                  FunctionCard(
+                    title: "Donations ($totalDonations)",
+                    icon: Icons.volunteer_activism,
+                    color: Colors.white,
+                    onTap: () async {
+                      var box = Hive.box('authBox');
+                      String userName = box.get('name') ?? "Guest";
+                      String userContact = box.get('contact') ?? "N/A";
+                      String userAddress = box.get('address') ?? "N/A";
 
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => UserDonationPage(
-        userName: userName,
-        userContact: userContact,
-        userAddress: userAddress, 
-      ),
-    ),
-  );
-
-  setState(() {}); // Refresh donations badge
-},
-
-  ),
-),
-
+                      await Navigator.push(
+                        context,
+                        _createRoute(
+                          UserDonationPage(
+                            userName: userName,
+                            userContact: userContact,
+                            userAddress: userAddress,
+                          ),
+                        ),
+                      );
+                      setState(() {});
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -332,6 +340,7 @@ class _UserHomeState extends State<UserHome>
     );
   }
 
+  // Animated card builder
   Widget _buildAnimatedCard(int index, Widget child) {
     final animation = CurvedAnimation(
       parent: _controller,
@@ -340,13 +349,38 @@ class _UserHomeState extends State<UserHome>
 
     return FadeTransition(
       opacity: animation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.2),
-          end: Offset.zero,
-        ).animate(animation),
-        child: child,
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.8, end: 1).animate(animation),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(2, 6),
+              ),
+            ],
+          ),
+          child: child,
+        ),
       ),
+    );
+  }
+
+  // Custom page transition
+  PageRouteBuilder _createRoute(Widget page) {
+    return PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 600),
+      pageBuilder: (_, __, ___) => page,
+      transitionsBuilder: (_, animation, __, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -355,63 +389,61 @@ class _UserHomeState extends State<UserHome>
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white.withOpacity(0.95),
-        title: const Text("Quick Access"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              _buildFunctionItem(context, "Shelters", Icons.home, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ShelterListPage()));
-              }),
-              _buildFunctionItem(
-                  context, "Required Products", Icons.shopping_cart, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => ProductListPage(canAdd: false)));
-              }),
-             
-              _buildFunctionItem(
-                  context, "Missing Persons", Icons.person_search, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => MissingPersonListPage(
-                            persons: sampleMissingPersons)));
-              }),
-              _buildFunctionItem(
-                  context, "Report an Issue", Icons.report_problem, () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const ReportIssuePage()));
-              }),
-             
-              _buildFunctionItem(
-                  context, "Volunteer Registration", Icons.group_add, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const VolunteerRegistrationPage()));
-              }),
-              _buildFunctionItem(context, "Videos", Icons.video_library, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const VideoGalleryPage()));
-              }),
-            ],
+      builder: (context) => ScaleTransition(
+        scale: CurvedAnimation(
+            parent: _controller, curve: Curves.elasticOut),
+        child: AlertDialog(
+          backgroundColor: Colors.white.withOpacity(0.95),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("Quick Access"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                _buildFunctionItem(
+                    context, "Shelters", Icons.home, () {
+                  Navigator.push(context,
+                      _createRoute(const ShelterListPage()));
+                }),
+                _buildFunctionItem(context, "Required Products",
+                    Icons.shopping_cart, () {
+                  Navigator.push(context,
+                      _createRoute(ProductListPage(canAdd: false)));
+                }),
+                _buildFunctionItem(context, "Missing Persons",
+                    Icons.person_search, () {
+                  Navigator.push(
+                      context,
+                      _createRoute(MissingPersonListPage(
+                          persons: sampleMissingPersons)));
+                }),
+                _buildFunctionItem(context, "Report an Issue",
+                    Icons.report_problem, () {
+                  Navigator.push(
+                      context, _createRoute(const ReportIssuePage()));
+                }),
+                _buildFunctionItem(context, "Volunteer Registration",
+                    Icons.group_add, () {
+                  Navigator.push(context,
+                      _createRoute(const VolunteerRegistrationPage()));
+                }),
+                _buildFunctionItem(
+                    context, "Videos", Icons.video_library, () {
+                  Navigator.push(
+                      context, _createRoute(const VideoGalleryPage()));
+                }),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
-        ],
       ),
     );
   }

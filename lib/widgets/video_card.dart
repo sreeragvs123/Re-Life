@@ -74,37 +74,37 @@ class _VideoCardState extends State<VideoCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return AspectRatio(
+      aspectRatio: 16 / 9, // Makes the card scale to screen width while keeping ratio
       child: Stack(
-        alignment: Alignment.center,
         children: [
-          _initialized
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                )
-              : const Center(child: CircularProgressIndicator()),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: _initialized
+                  ? VideoPlayer(_controller)
+                  : const Center(child: CircularProgressIndicator()),
+            ),
+          ),
 
-          // Large play button (initial)
+          // Large play button
           if (!_isPlaying && _initialized)
-            IconButton(
-              iconSize: 60,
-              icon: Icon(
-                Icons.play_circle_outline,
-                color: Colors.white.withOpacity(0.8),
+            Center(
+              child: IconButton(
+                iconSize: 60,
+                icon: Icon(
+                  Icons.play_circle_outline,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                onPressed: _togglePlayPause,
               ),
-              onPressed: _togglePlayPause,
             ),
 
-          // Small pause button (when playing)
+          // Small pause button
           if (_isPlaying && _initialized)
             Positioned(
               top: 8,
@@ -116,6 +116,27 @@ class _VideoCardState extends State<VideoCard> {
                   color: Colors.white.withOpacity(0.8),
                 ),
                 onPressed: _togglePlayPause,
+              ),
+            ),
+
+          // Pending Approval Badge
+          if (widget.video.status == 'pending')
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade700,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Text(
+                  "Pending",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
         ],

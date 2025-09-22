@@ -1,8 +1,9 @@
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'models/issue_model.dart';
+import 'package:video_player/video_player.dart';
 import 'data/issue_data.dart';
-import 'volunteer_video_page.dart';
-import 'models/video_model.dart';
+import 'models/issue_model.dart';
 
 class IssueListPage extends StatelessWidget {
   final String role;
@@ -157,46 +158,25 @@ class IssueListPage extends StatelessWidget {
                             style: const TextStyle(fontSize: 15, color: Colors.black87),
                           ),
 
-                          // Video Preview
+                          // Attachment preview
                           if (issue.attachment != null) ...[
                             const SizedBox(height: 10),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => VideoPlayerPage(
-                                      video: Video(
-                                        id: issue.id,
-                                        title: issue.title,
-                                        bytes: issue.attachment,
-                                      ),
-                                    ),
+                            if (kIsWeb || !issue.attachment!.isEmpty)
+                              Container(
+                                height: 180,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.black12,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.memory(
+                                    issue.attachment!,
+                                    fit: BoxFit.cover,
                                   ),
-                                );
-                              },
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    height: 180,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      color: Colors.black12,
-                                    ),
-                                  ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black54,
-                                    ),
-                                    padding: const EdgeInsets.all(12),
-                                    child: const Icon(Icons.play_arrow,
-                                        color: Colors.white, size: 50),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
                           ],
                         ],
                       ),
