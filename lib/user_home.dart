@@ -196,10 +196,10 @@ class _UserHomeState extends State<UserHome>
           Padding(
             padding: const EdgeInsets.all(16),
             child: GridView.count(
-              crossAxisCount: 4,
+              crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1,
+              childAspectRatio: 0.8,
               children: [
                 _buildAnimatedCard(
                   0,
