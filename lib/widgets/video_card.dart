@@ -95,7 +95,7 @@ class _VideoCardState extends State<VideoCard> {
           if (!_isPlaying && _initialized)
             Center(
               child: IconButton(
-                iconSize: 60,
+                iconSize: 20,
                 icon: Icon(
                   Icons.play_circle_outline,
                   color: Colors.white.withOpacity(0.8),
@@ -106,11 +106,9 @@ class _VideoCardState extends State<VideoCard> {
 
           // Small pause button
           if (_isPlaying && _initialized)
-            Positioned(
-              top: 8,
-              right: 8,
+            Center(
               child: IconButton(
-                iconSize: 30,
+                iconSize: 20,
                 icon: Icon(
                   Icons.pause_circle_outline,
                   color: Colors.white.withOpacity(0.8),

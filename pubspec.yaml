@@ -1,4 +1,4 @@
-name: video_app
+name: Relife
 description: A new Flutter project
 
 environment:
@@ -28,6 +28,8 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  flutter_launcher_icons: ^0.13.1
+
 
 flutter:
   uses-material-design: true
@@ -39,3 +41,8 @@ flutter:
     - assets/videos/disaster4.mp4
     - assets/videos/disaster5.mp4
     - assets/images/logo.png
+  
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"

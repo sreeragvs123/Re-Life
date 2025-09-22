@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:video_app/admin_report_page.dart';
-import 'package:video_app/admin_video_approval_page.dart';
-import 'package:video_app/data/report_data.dart';
-import 'package:video_app/volunteer_report_page.dart';
+import 'package:Relife/admin_report_page.dart';
+import 'package:Relife/admin_video_approval_page.dart';
+import 'package:Relife/data/report_data.dart';
+import 'package:Relife/volunteer_report_page.dart';
 
 import 'add_shelter_route_page.dart';
 import 'shelter_list_page.dart';
@@ -49,6 +49,26 @@ class _AdminHomeState extends State<AdminHome>
     super.dispose();
   }
 
+
+  Widget _buildAnimatedBackground() {
+  return AnimatedContainer(
+    duration: const Duration(seconds: 5),
+    onEnd: () {
+      setState(() {}); // triggers rebuild for gradient loop
+    },
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Colors.white,
+          Colors.blueAccent,
+        ]..shuffle(), // shuffle for subtle animation
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+  );
+}
+
   void _signOut() {
     var box = Hive.box('authBox');
     box.put('isLoggedIn', false);
@@ -66,11 +86,16 @@ class _AdminHomeState extends State<AdminHome>
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black.withOpacity(0.6),
-        elevation: 0,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        shadowColor: Colors.deepPurpleAccent,
+        elevation: 8,
         title: Text(
           "Admin Dashboard",
-          style: GoogleFonts.bebasNeue(fontSize: 26, letterSpacing: 1.1),
+            style: GoogleFonts.bebasNeue(
+            fontSize: 28,
+            letterSpacing: 1.2,
+            color: Colors.white,
+          ),
         ),
         actions: [
           IconButton(
@@ -101,19 +126,10 @@ class _AdminHomeState extends State<AdminHome>
           )
         ],
       ),
+
       body: Stack(
         children: [
-          Positioned.fill(
-            child: ShaderMask(
-              shaderCallback: (rect) => LinearGradient(
-                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-              ).createShader(rect),
-              blendMode: BlendMode.darken,
-             
-            ),
-          ),
+          _buildAnimatedBackground(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: GridView.count(
@@ -127,6 +143,7 @@ class _AdminHomeState extends State<AdminHome>
                   0,
                   _buildHoverCard(FunctionCard(
                     title: "Add Shelter & Route",
+                  
                     icon: Icons.add_home,
                     color: Colors.white.withOpacity(0.4),
                     onTap: () => Navigator.push(

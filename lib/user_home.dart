@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
-import 'package:video_app/user_blood_page.dart';
-import 'package:video_app/user_donation_page.dart';
+import 'package:Relife/user_blood_page.dart';
+import 'package:Relife/user_donation_page.dart';
 
 import 'widgets/function_card.dart';
 import 'shelter_list_page.dart';

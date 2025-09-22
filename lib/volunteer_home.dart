@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:video_app/volunteer_blood_page.dart';
-import 'package:video_app/volunteer_donation_page.dart';
-import 'package:video_app/volunteer_report_page.dart';
-import 'package:video_app/volunteer_video_page.dart';
+import 'package:Relife/volunteer_blood_page.dart';
+import 'package:Relife/volunteer_donation_page.dart';
+import 'package:Relife/volunteer_report_page.dart';
+import 'package:Relife/volunteer_video_page.dart';
 
 import 'widgets/function_card.dart';
 
@@ -88,6 +89,28 @@ class _VolunteerHomeState extends State<VolunteerHome>
     super.dispose();
   }
 
+  // 🔹 Animated gradient background
+Widget _buildAnimatedBackground() {
+  return AnimatedContainer(
+    duration: const Duration(seconds: 5),
+    onEnd: () {
+      setState(() {}); // triggers rebuild for gradient loop
+    },
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Colors.white,
+          Colors.blueAccent,
+        ]..shuffle(), // shuffle for subtle animation
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+  );
+}
+
+
+
   void _signOut() {
     var box = Hive.box('authBox');
     box.put('isLoggedIn', false);
@@ -111,8 +134,17 @@ class _VolunteerHomeState extends State<VolunteerHome>
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black.withOpacity(0.6),
-        title: Text("Volunteer Dashboard ($volunteerName)"),
+        backgroundColor: Colors.black.withOpacity(0.7),
+        shadowColor: Colors.deepPurpleAccent,
+        elevation: 8,
+        title: Text("Volunteer Dashboard ($volunteerName)",
+                    style: GoogleFonts.bebasNeue(
+                    fontSize: 28,
+                    letterSpacing: 1.2,
+                    color: Colors.white,
+                    
+          ),
+        ),
         actions: [
           // ✅ Role dropdown menu
           Builder(
@@ -145,29 +177,22 @@ class _VolunteerHomeState extends State<VolunteerHome>
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Background
-          Positioned.fill(
-            child: ShaderMask(
-              shaderCallback: (rect) => LinearGradient(
-                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-              ).createShader(rect),
-              blendMode: BlendMode.darken,
-             
-            ),
-          ),
+body: Stack(
+  children: [
+    // 🔹 Animated gradient
+    Positioned.fill(child: _buildAnimatedBackground()),
 
-          // Dashboard Grid
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.8,
+    // 🔹 Optional dark overlay for readability
+
+
+    // 🔹 Dashboard Grid
+    Padding(
+      padding: const EdgeInsets.all(16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.8,
               children: [
                 _buildAnimatedCard(
                   0,

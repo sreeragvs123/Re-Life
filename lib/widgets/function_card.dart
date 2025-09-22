@@ -5,7 +5,8 @@ class FunctionCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final Color? color; // optional color
-  final Widget? badge; // optional badge widget
+  final Widget? badge;
+  final double? textSize; // optional badge widget
 
   const FunctionCard({
     super.key,
@@ -14,6 +15,7 @@ class FunctionCard extends StatelessWidget {
     required this.onTap,
     this.color,
     this.badge,
+    this.textSize,
   });
 
   @override
@@ -24,19 +26,19 @@ class FunctionCard extends StatelessWidget {
         children: [
           Card(
             color: color ?? Colors.white,
-            elevation: 4,
+            elevation: 5,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(19),
             ),
             child: Center(
               child: SizedBox(
-                width: 68,
-                height: 68,
+                width: 100,
+                height: 100,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 24, color: Colors.blue),
+                    Icon(icon, size: 45, color: Colors.blue),
                     const SizedBox(height: 4),
                     Flexible(
                       child: Text(
@@ -44,10 +46,12 @@ class FunctionCard extends StatelessWidget {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        // bodySmall replaces the old caption style
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: textSize ?? 16, // use textSize if provided
+                            ),
+                        ),
                       ),
-                    ),
+        
                   ],
                 ),
               ),

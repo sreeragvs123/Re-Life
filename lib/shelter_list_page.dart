@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:video_app/models/shelter.dart';
+import 'package:Relife/models/shelter.dart';
 import '../data/shelter_data.dart';
 import 'add_shelter_route_page.dart';
 import 'user_shelter_map_page.dart';
