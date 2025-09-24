@@ -297,7 +297,7 @@ body: Stack(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const VolunteerVideoPage()),
+                            builder: (_) => const VolunteerVideoPage(volunteerName: 'Volunteer',)),
                       ),
                     ),
                   ),
@@ -458,6 +458,7 @@ body: Stack(
                       "Missing Persons",
                       Icons.person_search,
                       Colors.orange,
+                      
                       () {
                         Navigator.push(
                           context,
@@ -519,7 +520,7 @@ body: Stack(
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const VolunteerVideoPage()),
+                              builder: (_) => const VolunteerVideoPage(volunteerName: 'Volunteer',)),
                         );
                       },
                     ),

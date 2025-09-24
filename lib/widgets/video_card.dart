@@ -8,15 +8,15 @@ import 'package:universal_html/html.dart' as html;
 class VideoCard extends StatefulWidget {
   final Video video;
   final VoidCallback onTap;
-  final bool canDelete;
-  final VoidCallback? onDelete;
+  final VoidCallback? onDelete;   // optional callback for delete
+  final VoidCallback? onApprove;  // optional callback for approve
 
   const VideoCard({
     super.key,
     required this.video,
     required this.onTap,
-    this.canDelete = false,
     this.onDelete,
+    this.onApprove,
   });
 
   @override
@@ -82,93 +82,131 @@ class _VideoCardState extends State<VideoCard> {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 25/ 25,
-      child: Stack(
-        children: [
-          // Background video
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: _initialized
-                  ? Stack(
-                      children: [
-                        VideoPlayer(_controller),
-
-                        // Progress bar at bottom
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: VideoProgressIndicator(
-                            _controller,
-                            allowScrubbing: true,
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            colors: VideoProgressColors(
-                              playedColor: Colors.red,
-                              bufferedColor: Colors.grey,
-                              backgroundColor: Colors.black26,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : const Center(child: CircularProgressIndicator()),
-            ),
-          ),
-
-          // Play / Pause button
-          if (_initialized)
-            Center(
-              child: IconButton(
-                iconSize: 40,
-                icon: Icon(
-                  _isPlaying
-                      ? Icons.pause_circle_outline
-                      : Icons.play_circle_outline,
-                  color: Colors.white.withOpacity(0.8),
+    return Container(
+      key: ValueKey(widget.video.id), // ✅ unique key to prevent widget reuse issues
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: widget.onTap,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: _togglePlayPause,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _initialized
+                      ? VideoPlayer(_controller)
+                      : const Center(child: CircularProgressIndicator()),
+                ),
               ),
             ),
 
-          // Pending Approval Badge
-          if (widget.video.status == 'pending')
-            Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade700,
-                  borderRadius: BorderRadius.circular(5),
+            // Large play button
+            if (!_isPlaying && _initialized)
+              Center(
+                child: IconButton(
+                  iconSize: 60,
+                  icon: Icon(
+                    Icons.play_circle_outline,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                  onPressed: _togglePlayPause,
                 ),
-                child: const Text(
-                  "Pending",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              ),
+
+            // Small pause button
+            if (_isPlaying && _initialized)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  iconSize: 30,
+                  icon: Icon(
+                    Icons.pause_circle_outline,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                  onPressed: _togglePlayPause,
+                ),
+              ),
+
+            // Pending Approval Badge
+            if (widget.video.status == 'pending')
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Text(
+                    "Pending",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-          // Delete button (Admin/Volunteer only)
-          if (widget.canDelete)
+            // Video title overlay
             Positioned(
-              top: 8,
+              bottom: 8,
+              left: 8,
               right: 8,
-              child: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: widget.onDelete,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                color: Colors.black54,
+                child: Text(
+                  widget.video.title,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
-        ],
+
+            // Optional Approve button inside card
+            if (widget.video.status == 'pending' && widget.onApprove != null)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: ElevatedButton.icon(
+                  onPressed: widget.onApprove,
+                  icon: const Icon(Icons.check),
+                  label: const Text("Approve"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(90, 35),
+                  ),
+                ),
+              ),
+
+            // Optional Delete button inside card
+            if (widget.onDelete != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: ElevatedButton.icon(
+                  onPressed: widget.onDelete,
+                  icon: const Icon(Icons.delete),
+                  label: const Text("Delete"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade700,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(70, 30),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

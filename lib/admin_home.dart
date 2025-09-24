@@ -146,6 +146,8 @@ class _AdminHomeState extends State<AdminHome>
                   
                     icon: Icons.add_home,
                     color: Colors.white.withOpacity(0.4),
+                    textSize: 18,
+        fontWeight: FontWeight.bold,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -160,6 +162,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Manage Shelters",
                     icon: Icons.home_work,
                     color: Colors.white.withOpacity(0.4),
+                    textSize: 18,
+        fontWeight: FontWeight.bold, 
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -173,6 +177,8 @@ class _AdminHomeState extends State<AdminHome>
                   _buildHoverCard(FunctionCard(
                     title: "Volunteers & Tasks",
                     icon: Icons.group,
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     color: Colors.white.withOpacity(0.4),
                     onTap: () => Navigator.push(
                       context,
@@ -188,6 +194,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Required Products",
                     icon: Icons.shopping_cart,
                     color: Colors.white.withOpacity(0.4),
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -202,6 +210,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Missing Persons",
                     icon: Icons.person,
                     color: Colors.white.withOpacity(0.4),
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -219,6 +229,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Reported Issues",
                     icon: Icons.report_problem,
                     color: Colors.white.withOpacity(0.4),
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     badge: hasNewIssue
                         ? Container(
                             width: 14,
@@ -246,6 +258,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Videos",
                     icon: Icons.video_library,
                     color: Colors.white.withOpacity(0.4),
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -260,6 +274,8 @@ class _AdminHomeState extends State<AdminHome>
                     title: "Donations ($totalDonations)",
                     icon: Icons.volunteer_activism,
                     color: Colors.white.withOpacity(0.35),
+                                        textSize: 18,
+        fontWeight: FontWeight.bold, 
                     onTap: () async {
                       // Open Admin donation page
                       await Navigator.push(
@@ -279,6 +295,8 @@ class _AdminHomeState extends State<AdminHome>
       title: "Volunteer Reports (${reports.length})", // optional badge
       icon: Icons.report,
       color: Colors.white.withOpacity(0.35),
+                          textSize: 18,
+        fontWeight: FontWeight.bold, 
       onTap: () async {
         // Open Volunteer Report page
         await Navigator.push(

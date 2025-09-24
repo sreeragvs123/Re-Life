@@ -1,21 +1,21 @@
 import 'dart:typed_data';
 
 class Video {
-  String id;
-  String title;
-  String status; // 'pending' or 'approved'
-  String? path; // for mobile
-  Uint8List? bytes; // for web
-  Uint8List? thumbnail;
-  String? owner; // who uploaded (for volunteer restriction)
+  final String id;
+  final String title;
+  final String? path;        // allow null for web uploads
+  final Uint8List? thumbnail; // allow null for web uploads
+  final Uint8List? bytes;     // web file bytes
+  String status;              // 'pending' or 'approved'
+  final String uploader;      // volunteer name/id
 
   Video({
     required this.id,
     required this.title,
-    required this.status,
     this.path,
-    this.bytes,
     this.thumbnail,
-    this.owner,
-  });
+    this.bytes,
+    this.status = 'pending',
+    this.uploader = 'unknown',
+});
 }

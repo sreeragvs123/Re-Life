@@ -7,12 +7,13 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:universal_html/html.dart' as html;
-import 'data/video_data.dart';
-import 'models/video_model.dart';
-import 'widgets/video_card.dart';
+import '../data/video_data.dart';
+import '../models/video_model.dart';
+import '../widgets/video_card.dart';
 
 class VolunteerVideoPage extends StatefulWidget {
-  const VolunteerVideoPage({super.key});
+  final String volunteerName;
+  const VolunteerVideoPage({super.key, required this.volunteerName});
 
   @override
   State<VolunteerVideoPage> createState() => _VolunteerVideoPageState();
@@ -21,9 +22,9 @@ class VolunteerVideoPage extends StatefulWidget {
 class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
   bool _isUploading = false;
 
+  // Pick & Upload video
   Future<void> pickVideo() async {
     setState(() => _isUploading = true);
-
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.video,
@@ -35,18 +36,16 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
         Video newVideo;
 
         if (kIsWeb && result.files.single.bytes != null) {
-          // Web: use bytes
           newVideo = Video(
-            id: DateTime.now().toString(),
+            id: DateTime.now().toIso8601String(),
             title: title,
             bytes: result.files.single.bytes,
             status: 'pending',
+            uploader: widget.volunteerName,
             path: null,
             thumbnail: null,
-            owner: "volunteer",
           );
         } else if (!kIsWeb && result.files.single.path != null) {
-          // Mobile: use file path & thumbnail
           File pickedFile = File(result.files.single.path!);
           Directory appDir = await getApplicationDocumentsDirectory();
           String newPath = '${appDir.path}/$title';
@@ -55,19 +54,18 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
           Uint8List? thumb = await VideoThumbnail.thumbnailData(
             video: savedFile.path,
             imageFormat: ImageFormat.JPEG,
-            maxHeight: 300,
-            maxWidth: 300,
+            maxHeight: 150,
             quality: 75,
           );
 
           newVideo = Video(
-            id: DateTime.now().toString(),
+            id: DateTime.now().toIso8601String(),
             title: title,
             path: savedFile.path,
             thumbnail: thumb,
             status: 'pending',
+            uploader: widget.volunteerName,
             bytes: null,
-            owner: "volunteer",
           );
         } else {
           throw Exception("Unable to get video data.");
@@ -95,9 +93,6 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
         );
       } else {
         setState(() => _isUploading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No video selected.")),
-        );
       }
     } catch (e) {
       setState(() => _isUploading = false);
@@ -116,15 +111,6 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
     }
   }
 
-  void deleteVideo(Video video) {
-    setState(() {
-      videos.remove(video);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Video '${video.title}' deleted.")),
-    );
-  }
-
   void playVideo(Video video) {
     Navigator.push(
       context,
@@ -132,13 +118,32 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
     );
   }
 
+  void deleteVideo(String videoId) {
+    setState(() {
+      videos.removeWhere((v) => v.id == videoId);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade600,
+        content: Row(
+          children: const [
+            Icon(Icons.delete, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(child: Text("Video deleted.")),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final approvedVideos = videos.where((v) => v.status == 'approved').toList();
+    final allVideos = videos;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Volunteer Videos"),
+        title: const Text("Videos"),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -158,8 +163,7 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -170,44 +174,39 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
             ),
           ),
           if (_isUploading)
-            const LinearProgressIndicator(
-                minHeight: 5, color: Colors.deepPurple),
+            const LinearProgressIndicator(minHeight: 5, color: Colors.deepPurple),
           Expanded(
-            child: approvedVideos.isEmpty
+            child: allVideos.isEmpty
                 ? const Center(
                     child: Text(
-                      "No videos uploaded yet.",
+                      "No videos available.",
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(12),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // 2 per row
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 25 / 25,
+                      childAspectRatio: 16 / 9,
                     ),
-                    itemCount: approvedVideos.length,
+                    itemCount: allVideos.length,
                     itemBuilder: (context, index) {
-                      final video = approvedVideos[index];
+                      final video = allVideos[index];
                       return Stack(
+                        key: ValueKey(video.id), // ✅ important for smooth deletion
                         children: [
                           GestureDetector(
                             onTap: () => playVideo(video),
-                            child: VideoCard(
-                              video: video,
-                              onTap: () {},
-                            ),
+                            child: VideoCard(video: video, onTap: () {}),
                           ),
                           Positioned(
-                            top: 8,
+                            bottom: 8,
                             right: 8,
                             child: IconButton(
-                              icon: const Icon(Icons.delete,
-                                  color: Colors.red, size: 28),
-                              onPressed: () => deleteVideo(video),
+                              icon: const Icon(Icons.delete, color: Colors.redAccent),
+                              onPressed: () => deleteVideo(video.id),
                             ),
                           ),
                         ],
@@ -221,7 +220,7 @@ class _VolunteerVideoPageState extends State<VolunteerVideoPage> {
   }
 }
 
-// 🎬 Video Player Page with timeline
+// VideoPlayerPage remains the same
 class VideoPlayerPage extends StatefulWidget {
   final Video video;
   const VideoPlayerPage({super.key, required this.video});
@@ -236,19 +235,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
-
     if (kIsWeb && widget.video.bytes != null) {
       final blob = html.Blob([widget.video.bytes]);
       final url = html.Url.createObjectUrlFromBlob(blob);
       _controller = VideoPlayerController.network(url)
-        ..initialize().then((_) {
-          setState(() {});
-        });
+        ..initialize().then((_) => setState(() {}));
     } else if (!kIsWeb && widget.video.path != null) {
       _controller = VideoPlayerController.file(File(widget.video.path!))
-        ..initialize().then((_) {
-          setState(() {});
-        });
+        ..initialize().then((_) => setState(() {}));
     }
   }
 
@@ -262,13 +256,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     setState(() {
       _controller.value.isPlaying ? _controller.pause() : _controller.play();
     });
-  }
-
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-    return "$minutes:$seconds";
   }
 
   @override
@@ -309,65 +296,50 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                   : const CircularProgressIndicator(),
             ),
           ),
-          if (_controller.value.isInitialized) ...[
-            VideoProgressIndicator(
-              _controller,
-              allowScrubbing: true,
-              colors: VideoProgressColors(
-                playedColor: Colors.deepPurple,
-                bufferedColor: Colors.purple.shade200,
-                backgroundColor: Colors.grey.shade300,
-              ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: _controller,
-              builder: (context, VideoPlayerValue value, child) {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          if (_controller.value.isInitialized)
+            Column(
+              children: [
+                VideoProgressIndicator(
+                  _controller,
+                  allowScrubbing: true,
+                  colors: VideoProgressColors(
+                    playedColor: Colors.deepPurple,
+                    bufferedColor: Colors.purple.shade200,
+                    backgroundColor: Colors.grey.shade300,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(_formatDuration(value.position),
-                          style: const TextStyle(color: Colors.white)),
-                      Text(_formatDuration(value.duration),
-                          style: const TextStyle(color: Colors.white)),
+                      ElevatedButton.icon(
+                        onPressed: _togglePlayPause,
+                        icon: Icon(_controller.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow),
+                        label: Text(
+                            _controller.value.isPlaying ? "Pause" : "Play"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurple,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      ElevatedButton.icon(
+                        onPressed: () => _controller.seekTo(Duration.zero),
+                        icon: const Icon(Icons.stop),
+                        label: const Text("Restart"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _togglePlayPause,
-                    icon: Icon(_controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow),
-                    label:
-                        Text(_controller.value.isPlaying ? "Pause" : "Play"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton.icon(
-                    onPressed: () => _controller.seekTo(Duration.zero),
-                    icon: const Icon(Icons.stop),
-                    label: const Text("Restart"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
