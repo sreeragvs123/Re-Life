@@ -55,7 +55,8 @@ Future<void> pickVideo() async {
         Uint8List? thumb = await VideoThumbnail.thumbnailData(
           video: savedFile.path,
           imageFormat: ImageFormat.JPEG,
-          maxHeight: 150,
+          maxHeight: 300,
+          maxWidth: 300, 
           quality: 75,
         );
 
