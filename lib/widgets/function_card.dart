@@ -4,9 +4,10 @@ class FunctionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final VoidCallback onTap;
-  final Color? color; // optional color
+  final Color? color; 
   final Widget? badge;
-  final double? textSize; // optional badge widget
+  final double? textSize; 
+  final FontWeight? fontWeight; // ✅ new property
 
   const FunctionCard({
     super.key,
@@ -16,6 +17,7 @@ class FunctionCard extends StatelessWidget {
     this.color,
     this.badge,
     this.textSize,
+    this.fontWeight, // ✅ allow bold/normal customization
   });
 
   @override
@@ -36,7 +38,6 @@ class FunctionCard extends StatelessWidget {
                 height: 100,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, size: 45, color: Colors.blue),
                     const SizedBox(height: 4),
@@ -47,11 +48,11 @@ class FunctionCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: textSize ?? 16, // use textSize if provided
+                              fontSize: textSize ?? 16,
+                              fontWeight: fontWeight ?? FontWeight.normal, // ✅ bold/normal
                             ),
-                        ),
                       ),
-        
+                    ),
                   ],
                 ),
               ),

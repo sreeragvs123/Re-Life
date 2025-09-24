@@ -93,7 +93,7 @@ class _UserHomeState extends State<UserHome>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black.withOpacity(0.7),
-        elevation: 8,
+        elevation: 1,
         shadowColor: Colors.deepPurpleAccent,
         title: Text(
           "Disaster Relief Hub",
@@ -196,144 +196,163 @@ class _UserHomeState extends State<UserHome>
           Padding(
             padding: const EdgeInsets.all(16),
             child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.8,
-              children: [
-                _buildAnimatedCard(
-                  0,
-                  FunctionCard(
-                    title: "Shelters",
-                    icon: Icons.home,
-                    color: Colors.white,
-                    onTap: () =>
-                        Navigator.push(context, _createRoute(const ShelterListPage())),
-                  ),
+  crossAxisCount: 2,
+  crossAxisSpacing: 16,
+  mainAxisSpacing: 16,
+  childAspectRatio: 0.8,
+  children: [
+    _buildAnimatedCard(
+      0,
+      FunctionCard(
+        title: "Shelters",
+        icon: Icons.home,
+        color: Colors.white,
+        textSize: 18,
+        fontWeight: FontWeight.bold, // ✅ bold "Shelters"
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(const ShelterListPage()),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      1,
+      FunctionCard(
+        title: "Required Products",
+        icon: Icons.shopping_cart,
+        color: Colors.white,
+        textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(ProductListPage(canAdd: false)),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      2,
+      FunctionCard(
+        title: "Missing Persons",
+        icon: Icons.person_search,
+        color: Colors.white,
+        textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(
+            MissingPersonListPage(persons: sampleMissingPersons),
+          ),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      3,
+      FunctionCard(
+        title: "Report an Issue",
+        icon: Icons.report_problem,
+        color: Colors.white,
+                textSize: 18,
+        fontWeight: FontWeight.bold,
+        badge: hasNewIssue
+            ? Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.redAccent,
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    )
+                  ],
                 ),
-                _buildAnimatedCard(
-                  1,
-                  FunctionCard(
-                    title: "Required Products",
-                    icon: Icons.shopping_cart,
-                    color: Colors.white,
-                    onTap: () => Navigator.push(
-                      context,
-                      _createRoute(ProductListPage(canAdd: false)),
-                    ),
-                  ),
-                ),
-                _buildAnimatedCard(
-                  2,
-                  FunctionCard(
-                    title: "Missing Persons",
-                    icon: Icons.person_search,
-                    color: Colors.white,
-                    onTap: () => Navigator.push(
-                      context,
-                      _createRoute(
-                          MissingPersonListPage(persons: sampleMissingPersons)),
-                    ),
-                  ),
-                ),
-                _buildAnimatedCard(
-                  3,
-                  FunctionCard(
-                    title: "Report an Issue",
-                    icon: Icons.report_problem,
-                    color: Colors.white,
-                    badge: hasNewIssue
-                        ? Container(
-                            width: 14,
-                            height: 14,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.redAccent,
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                )
-                              ],
-                            ),
-                          )
-                        : null,
-                    onTap: () async {
-                      final submitted = await Navigator.push(
-                        context,
-                        _createRoute(const ReportIssuePage()),
-                      );
-                      if (submitted == true) {
-                        setState(() => hasNewIssue = true);
-                      }
-                    },
-                  ),
-                ),
-                _buildAnimatedCard(
-                  4,
-                  FunctionCard(
-                    title: "Volunteer Registration",
-                    icon: Icons.group_add,
-                    color: Colors.white,
-                    onTap: () => Navigator.push(
-                      context,
-                      _createRoute(const VolunteerRegistrationPage()),
-                    ),
-                  ),
-                ),
-                _buildAnimatedCard(
-                  5,
-                  FunctionCard(
-                    title: "Videos",
-                    icon: Icons.video_library,
-                    color: Colors.white,
-                    onTap: () => Navigator.push(
-                      context,
-                      _createRoute(const VideoGalleryPage()),
-                    ),
-                  ),
-                ),
-                _buildAnimatedCard(
-                  6,
-                  FunctionCard(
-                    title: "Blood Donation",
-                    icon: Icons.bloodtype,
-                    color: Colors.white,
-                    onTap: () => Navigator.push(
-                      context,
-                      _createRoute(const UserBloodPage()),
-                    ),
-                  ),
-                ),
-                _buildAnimatedCard(
-                  7,
-                  FunctionCard(
-                    title: "Donations ($totalDonations)",
-                    icon: Icons.volunteer_activism,
-                    color: Colors.white,
-                    onTap: () async {
-                      var box = Hive.box('authBox');
-                      String userName = box.get('name') ?? "Guest";
-                      String userContact = box.get('contact') ?? "N/A";
-                      String userAddress = box.get('address') ?? "N/A";
+              )
+            : null,
+        onTap: () async {
+          final submitted = await Navigator.push(
+            context,
+            _createRoute(const ReportIssuePage()),
+          );
+          if (submitted == true) {
+            setState(() => hasNewIssue = true);
+          }
+        },
+      ),
+    ),
+    _buildAnimatedCard(
+      4,
+      FunctionCard(
+        title: "Volunteer Registration",
+        icon: Icons.group_add,
+        color: Colors.white,
+                textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(const VolunteerRegistrationPage()),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      5,
+      FunctionCard(
+        title: "Videos",
+        icon: Icons.video_library,
+        color: Colors.white,
+                textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(const VideoGalleryPage()),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      6,
+      FunctionCard(
+        title: "Blood Donation",
+        icon: Icons.bloodtype,
+        color: Colors.white,
+                textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(const UserBloodPage()),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      7,
+      FunctionCard(
+        title: "Donations ($totalDonations)",
+        icon: Icons.volunteer_activism,
+        color: Colors.white,
+                textSize: 18,
+        fontWeight: FontWeight.bold,
+        onTap: () async {
+          var box = Hive.box('authBox');
+          String userName = box.get('name') ?? "Guest";
+          String userContact = box.get('contact') ?? "N/A";
+          String userAddress = box.get('address') ?? "N/A";
 
-                      await Navigator.push(
-                        context,
-                        _createRoute(
-                          UserDonationPage(
-                            userName: userName,
-                            userContact: userContact,
-                            userAddress: userAddress,
-                          ),
-                        ),
-                      );
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ],
+          await Navigator.push(
+            context,
+            _createRoute(
+              UserDonationPage(
+                userName: userName,
+                userContact: userContact,
+                userAddress: userAddress,
+              ),
             ),
+          );
+          setState(() {});
+        },
+      ),
+    ),
+  ],
+)
           ),
         ],
       ),
