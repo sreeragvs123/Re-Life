@@ -4,13 +4,7 @@ import 'dart:typed_data';
 Uint8List emptyThumbnail = Uint8List(0);
 
 List<Video> videos = [
-  Video(
-    id: 'V7',
-    title: 'Flood Relief Efforts',
-    path: 'assets/videos/videoplayback.mp4',
-    thumbnail: emptyThumbnail,
-    status: 'approved',
-  ),
+
   Video(
     id: 'V1',
     title: 'Flood Relief Efforts',
