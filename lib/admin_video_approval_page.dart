@@ -8,7 +8,8 @@ class AdminVideoApprovalPage extends StatefulWidget {
   const AdminVideoApprovalPage({super.key});
 
   @override
-  State<AdminVideoApprovalPage> createState() => _AdminVideoApprovalPageState();
+  State<AdminVideoApprovalPage> createState() =>
+      _AdminVideoApprovalPageState();
 }
 
 class _AdminVideoApprovalPageState extends State<AdminVideoApprovalPage> {
@@ -31,9 +32,28 @@ class _AdminVideoApprovalPageState extends State<AdminVideoApprovalPage> {
     );
   }
 
+  void deleteVideo(Video video) {
+    setState(() {
+      // ✅ Delete by ID instead of object reference
+      videos.removeWhere((v) => v.id == video.id);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red.shade600,
+        content: Row(
+          children: [
+            const Icon(Icons.delete, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text("Video '${video.title}' deleted.")),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // show all videos (approved + pending)
     final allVideos = videos;
 
     return Scaffold(
@@ -53,46 +73,57 @@ class _AdminVideoApprovalPageState extends State<AdminVideoApprovalPage> {
           : GridView.builder(
               padding: const EdgeInsets.all(12),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+                crossAxisCount: 2, // ✅ 2 videos per row
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 16 / 9,
+                childAspectRatio: 25 / 25, // keeps video size proportional
               ),
               itemCount: allVideos.length,
               itemBuilder: (context, index) {
                 final video = allVideos[index];
 
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VideoPlayerPage(video: video),
-                      ),
-                    );
-                  },
-                  child: Stack(
-                    children: [
-                      VideoCard(video: video, onTap: () {}),
+                return Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => VideoPlayerPage(video: video),
+                          ),
+                        );
+                      },
+                      child: VideoCard(video: video, onTap: () {}),
+                    ),
 
-                      // Show approve button if pending
-                      if (video.status == 'pending')
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: ElevatedButton.icon(
-                            onPressed: () => approveVideo(video),
-                            icon: const Icon(Icons.check),
-                            label: const Text("Approve"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green.shade700,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(90, 35),
-                            ),
+                    // ✅ Approve button (if pending)
+                    if (video.status == 'pending')
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: ElevatedButton.icon(
+                          onPressed: () => approveVideo(video),
+                          icon: const Icon(Icons.check),
+                          label: const Text("Approve"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade700,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(90, 35),
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+
+                    // ✅ Delete button (always visible)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete,
+                            color: Colors.red, size: 28),
+                        onPressed: () => deleteVideo(video),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),

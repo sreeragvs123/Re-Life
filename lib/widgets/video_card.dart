@@ -8,8 +8,16 @@ import 'package:universal_html/html.dart' as html;
 class VideoCard extends StatefulWidget {
   final Video video;
   final VoidCallback onTap;
+  final bool canDelete;
+  final VoidCallback? onDelete;
 
-  const VideoCard({super.key, required this.video, required this.onTap});
+  const VideoCard({
+    super.key,
+    required this.video,
+    required this.onTap,
+    this.canDelete = false,
+    this.onDelete,
+  });
 
   @override
   State<VideoCard> createState() => _VideoCardState();
@@ -75,9 +83,10 @@ class _VideoCardState extends State<VideoCard> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 16 / 9, // Makes the card scale to screen width while keeping ratio
+      aspectRatio: 25/ 25,
       child: Stack(
         children: [
+          // Background video
           Container(
             decoration: BoxDecoration(
               color: Colors.grey[300],
@@ -86,31 +95,41 @@ class _VideoCardState extends State<VideoCard> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: _initialized
-                  ? VideoPlayer(_controller)
+                  ? Stack(
+                      children: [
+                        VideoPlayer(_controller),
+
+                        // Progress bar at bottom
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: VideoProgressIndicator(
+                            _controller,
+                            allowScrubbing: true,
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            colors: VideoProgressColors(
+                              playedColor: Colors.red,
+                              bufferedColor: Colors.grey,
+                              backgroundColor: Colors.black26,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
                   : const Center(child: CircularProgressIndicator()),
             ),
           ),
 
-          // Large play button
-          if (!_isPlaying && _initialized)
+          // Play / Pause button
+          if (_initialized)
             Center(
               child: IconButton(
-                iconSize: 20,
+                iconSize: 40,
                 icon: Icon(
-                  Icons.play_circle_outline,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-                onPressed: _togglePlayPause,
-              ),
-            ),
-
-          // Small pause button
-          if (_isPlaying && _initialized)
-            Center(
-              child: IconButton(
-                iconSize: 20,
-                icon: Icon(
-                  Icons.pause_circle_outline,
+                  _isPlaying
+                      ? Icons.pause_circle_outline
+                      : Icons.play_circle_outline,
                   color: Colors.white.withOpacity(0.8),
                 ),
                 onPressed: _togglePlayPause,
@@ -123,7 +142,8 @@ class _VideoCardState extends State<VideoCard> {
               top: 8,
               left: 8,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.orange.shade700,
                   borderRadius: BorderRadius.circular(5),
@@ -135,6 +155,17 @@ class _VideoCardState extends State<VideoCard> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
+            ),
+
+          // Delete button (Admin/Volunteer only)
+          if (widget.canDelete)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: widget.onDelete,
               ),
             ),
         ],

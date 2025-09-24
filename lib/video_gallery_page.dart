@@ -34,7 +34,7 @@ class VideoGalleryPage extends StatelessWidget {
                   crossAxisCount: 2, // 2 per row
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 16 / 9, // keeps VideoCard ratio
+                  childAspectRatio: 25 / 25, // keeps VideoCard ratio
                 ),
                 itemCount: approvedVideos.length,
                 itemBuilder: (context, index) {
