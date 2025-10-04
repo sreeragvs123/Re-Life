@@ -18,6 +18,7 @@ import 'login_page.dart';
 import 'admin_home.dart';
 import 'volunteer_home.dart';
 import 'models/volunteer.dart';
+import 'donation_page.dart';
 
 class UserHome extends StatefulWidget {
   const UserHome({super.key});
@@ -104,26 +105,33 @@ class _UserHomeState extends State<UserHome>
           ),
         ),
         actions: [
+
+
           // account switcher
-          if (role == "ADMIN" || role == "VOLUNTEER")
+          if (role == "ADMIN" || role == "VOLUNTEER") // i think this is a dead code need to check it later
             PopupMenuButton<String>(
               color: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               icon: const Icon(Icons.switch_account, color: Colors.white),
+
               onSelected: (value) {
                 if (value == "admin") {
                   Navigator.pushReplacement(
                     context,
                     _createRoute(const AdminHome()),
                   );
-                } else if (value == "user") {
+                } 
+                else if (value == "user") {
                   Navigator.pushReplacement(
                     context,
                     _createRoute(const UserHome()),
                   );
-                } else if (value == "volunteer") {
+                } 
+                else if (value == "volunteer") {
                   Volunteer volunteerToOpen;
+
+
 
                   if (role == "VOLUNTEER") {
                     var volunteersBox = Hive.box('volunteersBox');
@@ -137,13 +145,15 @@ class _UserHomeState extends State<UserHome>
                         email: email,
                         password: data['password'],
                       );
-                    } else {
+                    } 
+                    else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Volunteer data not found!")),
                       );
                       return;
                     }
-                  } else {
+                  } 
+                  else {
                     volunteerToOpen = Volunteer(
                       name: "Admin Volunteer",
                       place: "Admin Center",
@@ -156,8 +166,13 @@ class _UserHomeState extends State<UserHome>
                     context,
                     _createRoute(VolunteerHome(volunteer: volunteerToOpen)),
                   );
+
                 }
               },
+
+              
+
+
               itemBuilder: (context) {
                 List<PopupMenuEntry<String>> items = [];
                 if (role == "ADMIN") {
@@ -171,6 +186,10 @@ class _UserHomeState extends State<UserHome>
                 return items;
               },
             ),
+
+
+
+
           if (role != null && role != "USER")
             TextButton(
               onPressed: _signOut,
@@ -232,6 +251,20 @@ class _UserHomeState extends State<UserHome>
     _buildAnimatedCard(
       2,
       FunctionCard(
+        title: "Payment",
+        icon: Icons.payment,
+        color: Colors.white,
+        textSize: 18,
+        fontWeight: FontWeight.bold, // ✅ bold "Payment"
+        onTap: () => Navigator.push(
+          context,
+          _createRoute(const DonationPage()),
+        ),
+      ),
+    ),
+    _buildAnimatedCard(
+      3,
+      FunctionCard(
         title: "Missing Persons",
         icon: Icons.person_search,
         color: Colors.white,
@@ -246,7 +279,7 @@ class _UserHomeState extends State<UserHome>
       ),
     ),
     _buildAnimatedCard(
-      3,
+      4,
       FunctionCard(
         title: "Report an Issue",
         icon: Icons.report_problem,
@@ -282,7 +315,7 @@ class _UserHomeState extends State<UserHome>
       ),
     ),
     _buildAnimatedCard(
-      4,
+      5,
       FunctionCard(
         title: "Volunteer Registration",
         icon: Icons.group_add,
@@ -296,7 +329,7 @@ class _UserHomeState extends State<UserHome>
       ),
     ),
     _buildAnimatedCard(
-      5,
+      6,
       FunctionCard(
         title: "Videos",
         icon: Icons.video_library,
@@ -310,7 +343,7 @@ class _UserHomeState extends State<UserHome>
       ),
     ),
     _buildAnimatedCard(
-      6,
+      7,
       FunctionCard(
         title: "Blood Donation",
         icon: Icons.bloodtype,
@@ -324,7 +357,7 @@ class _UserHomeState extends State<UserHome>
       ),
     ),
     _buildAnimatedCard(
-      7,
+      8,
       FunctionCard(
         title: "Donations ($totalDonations)",
         icon: Icons.volunteer_activism,
@@ -404,7 +437,6 @@ class _UserHomeState extends State<UserHome>
   }
 
   void _showFunctionsDialog(BuildContext context) {
-    int totalDonations = donationsList.fold(0, (sum, d) => sum + d.quantity);
 
     showDialog(
       context: context,

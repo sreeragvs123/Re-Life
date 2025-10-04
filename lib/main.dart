@@ -5,6 +5,9 @@ import 'admin_home.dart';
 import 'volunteer_home.dart';
 import 'models/volunteer.dart';
 
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -12,12 +15,17 @@ void main() async {
   // Open required boxes
   await Hive.openBox('authBox');       // session storage
   await Hive.openBox('volunteersBox'); // volunteers database
-  await Hive.openBox('bloodBox');      // blood donation db (if needed)
+  await Hive.openBox('bloodBox');
+      // blood donation db (if needed)
 
   runApp(const MyApp());
 }
 
+
+
+
 class MyApp extends StatelessWidget {
+  
   const MyApp({super.key});
 
   @override
@@ -31,37 +39,47 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
 
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key}); // SpalshScree :  first screen that shows up when you open an app. usually displays the app logo, name, or animation.
   @override
   State<SplashScreen> createState() => _SplashScreenState();
+
 }
+
+
+
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState() {
-    super.initState();
+  void initState() { // ifecycle method of a StatefulWidget.It is called exactly once when the widget is inserted into the widget treeuse it to do one-time setup, like: Start animations , Initialize variables , Fetch data
 
-    // Delay for 3 seconds before moving ahead
-    Future.delayed(const Duration(seconds: 3), () {
+    super.initState(); // becoz we override the parent's initState so we again call the parents's initState using super keyword
+
+    Future.delayed(const Duration(seconds: 3), () {// Delay for 3 seconds before moving ahead
       _navigateNext();
     });
+
   }
 
   void _navigateNext() {
-    var authBox = Hive.box('authBox');
-    bool isLoggedIn = authBox.get('isLoggedIn', defaultValue: false);
-    String role = authBox.get('role', defaultValue: "USER");
 
-    Widget nextPage;
+    var authBox = Hive.box('authBox'); // opens the box in the Hive and tries to take the key:value pair from the box 
+    bool isLoggedIn = authBox.get('isLoggedIn', defaultValue: false); // if there is no value to the key "isLogged" set default
+    String role = authBox.get('role', defaultValue: "USER"); // if there is no value to the key "role" set default
+
+
+    Widget nextPage;   //A Widget Variable Creation that help tp hold each page that we need to navigate if the if-else conditon is true
+
     if (isLoggedIn && role == "ADMIN") {
       nextPage = const AdminHome();
-    } else if (isLoggedIn && role == "VOLUNTEER") {
+    } 
+    
+    else if (isLoggedIn && role == "VOLUNTEER") {
       final email = authBox.get('email');
       final vBox = Hive.box('volunteersBox');
       final data = vBox.get(email);
-
       nextPage = VolunteerHome(
         volunteer: Volunteer(
           name: data['name'],
@@ -70,15 +88,24 @@ class _SplashScreenState extends State<SplashScreen> {
           password: data['password'],
         ),
       );
-    } else {
+    } 
+    else {
       nextPage = const UserHome();
     }
 
+
+
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => nextPage),
+      MaterialPageRoute(builder: (_) => nextPage), //returns the widget we want to show next. which is nextPage , and it's type is already decided in the if-else statements
     );
   }
+  //Navigator.pushReplacement()→ it replaces the current screen (in your case, SplashScreen) with a new one (nextPage).
+  //Navigator.push(), it adds a new screen on top of the current one.
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +121,7 @@ class _SplashScreenState extends State<SplashScreen> {
             end: Alignment.bottomRight,
           ),
         ),
+
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +129,7 @@ class _SplashScreenState extends State<SplashScreen> {
               Image.asset("assets/images/logo.png", height: 300),
               const SizedBox(height: 20),
               const Text(
-                "RELIFE",
+                "RE-LIFE",
                 style: TextStyle(
                   fontFamily: 'Impact', // Impact font
                   fontSize: 36,

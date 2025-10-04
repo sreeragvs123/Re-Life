@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    
+    {
+      "type": "flutter",
+      "request": "launch",
+      "name": "Launch Flutter App",
+      "program": "${workspaceFolder}/${input:entryFile}",
+      "cwd": "${workspaceFolder}",
+      "flutterMode": "debug",
+      "enableAsserts": true,
+      "args": [],
+      "toolArgs": [],
+      "env": {}
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "entryFile",
+      "description": "Enter the path to the entry file (e.g., lib/main.dart)"
+    }
+  ]
+}
