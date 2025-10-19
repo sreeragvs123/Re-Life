@@ -17,6 +17,13 @@ android {
         jvmTarget = "11"
     }
 
+    // read MAPS_API_KEY if provided (e.g. in android/local.properties or via -PMAPS_API_KEY=...)
+    val mapsKey: String = if (project.hasProperty("AIzaSyDk5-TmduiN-vjC2i2POHwJqmTePuufVnY")) {
+        project.property("AIzaSyDk5-TmduiN-vjC2i2POHwJqmTePuufVnY") as String
+    } else {
+        ""
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.video_app"
@@ -26,6 +33,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // expose MAPS_API_KEY to the AndroidManifest via manifest placeholder
+        manifestPlaceholders["AIzaSyDk5-TmduiN-vjC2i2POHwJqmTePuufVnY"] = mapsKey
     }
 
     buildTypes {
