@@ -4,6 +4,7 @@ import 'package:Relife/models/shelter.dart';
 import '../data/shelter_data.dart';
 import 'add_shelter_route_page.dart';
 import 'user_shelter_map_page.dart';
+import 'map_picker_page.dart';
 
 class ShelterListPage extends StatefulWidget {
   final bool isAdmin;
@@ -25,71 +26,43 @@ class _ShelterListPageState extends State<ShelterListPage> {
     if (result == true) setState(() {}); // Refresh list
   }
 
-  // Ask user for current location before opening map
-  void _askUserLocation(Shelter shelter) {
-    final latController = TextEditingController();
-    final lonController = TextEditingController();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Enter Your Current Location"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: latController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Latitude",
-                hintText: "e.g., 8.8932",
-              ),
-            ),
-            TextField(
-              controller: lonController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Longitude",
-                hintText: "e.g., 76.6141",
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              final lat = double.tryParse(latController.text.trim());
-              final lon = double.tryParse(lonController.text.trim());
-
-              if (lat != null && lon != null) {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => UserShelterMapPage(
-                      userLocation: LatLng(lat, lon),
-                      shelter: shelter,
-                    ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Enter valid coordinates")),
-                );
-              }
-            },
-            child: const Text("Submit"),
-          ),
-        ],
+  // Pick user's current location and view all shelters
+  void _pickUserLocationForMap() async {
+    final result = await Navigator.push<LatLng?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MapPickerPage(),
       ),
     );
+
+    if (result != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => UserShelterMapPage(
+            userLocation: result,
+          ),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Shelters"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("Shelters"),
+        centerTitle: true,
+        actions: [
+          Tooltip(
+            message: "View all shelters on map",
+            child: IconButton(
+              icon: const Icon(Icons.map),
+              onPressed: _pickUserLocationForMap,
+            ),
+          ),
+        ],
+      ),
       body: shelters.isEmpty
           ? const Center(child: Text("No shelters available"))
           : ListView.builder(
@@ -105,7 +78,6 @@ class _ShelterListPageState extends State<ShelterListPage> {
                         "${shelter.location} | ${shelter.filled}/${shelter.capacity}"),
                     trailing:
                         const Icon(Icons.location_on, color: Colors.red),
-                    onTap: () => _askUserLocation(shelter),
                   ),
                 );
               },

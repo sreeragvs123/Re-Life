@@ -9,7 +9,7 @@ class VideoGalleryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Only approved videos
-    final approvedVideos = videos.where((v) => v.status == 'approved').toList();
+    final approvedVideos = videos.where((v) => v.status == 'approved').toList();// this collection those vedios in the list that are been approved by the admin
 
     return Scaffold(
       backgroundColor: Colors.black,

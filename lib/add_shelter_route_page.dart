@@ -1,10 +1,8 @@
 // lib/pages/add_shelter_route_page.dart
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:latlong2/latlong.dart' as ll;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async';
 import 'map_picker_page.dart';
 import '../models/shelter.dart';
 import '../models/evacuation_route.dart';
@@ -27,9 +25,6 @@ class _AddShelterRoutePageState extends State<AddShelterRoutePage> {
   final _locationController = TextEditingController();
 
   ll.LatLng? shelterLatLng;
-
-  // helper to convert google_maps_flutter LatLng -> latlong2 LatLng
-  ll.LatLng _gmToLl(gmaps.LatLng p) => ll.LatLng(p.latitude, p.longitude);
 
   // reverse geocode to get a human readable address (optional)
   Future<String?> _reverseGeocode(double lat, double lng) async {
@@ -85,115 +80,7 @@ class _AddShelterRoutePageState extends State<AddShelterRoutePage> {
     }
   }
 
-  // Map picker dialog using google_maps_flutter
-  void _pickShelterLocation() {
-    final Completer<gmaps.GoogleMapController> pickerController =
-        Completer<gmaps.GoogleMapController>();
-    ll.LatLng? tempLl = shelterLatLng;
-    gmaps.LatLng? tempGm = shelterLatLng != null
-        ? gmaps.LatLng(shelterLatLng!.latitude, shelterLatLng!.longitude)
-        : null;
 
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text("Select Shelter Location"),
-          content: SizedBox(
-            width: 350,
-            height: 400,
-            child: StatefulBuilder(
-              builder: (ctx, setStateDialog) {
-                // build markers in a non-null-safe way to satisfy the analyzer
-                final Set<gmaps.Marker> markers = <gmaps.Marker>{};
-                if (tempGm != null) {
-                  // force non-null here since we checked above
-                  markers.add(gmaps.Marker(
-                    markerId: const gmaps.MarkerId('selected'),
-                    position: tempGm!, // use non-null assertion
-                    icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(
-                        gmaps.BitmapDescriptor.hueRed),
-                  ));
-                }
-
-                return Column(
-                  children: [
-                    Expanded(
-                      child: gmaps.GoogleMap(
-                        initialCameraPosition: gmaps.CameraPosition(
-                          target:
-                              tempGm ?? const gmaps.LatLng(8.8932, 76.6141),
-                          zoom: 13,
-                        ),
-                        markers: markers,
-                        onMapCreated: (ctrl) {
-                          if (!pickerController.isCompleted) {
-                            pickerController.complete(ctrl);
-                          }
-                        },
-                        onTap: (pos) {
-                          setStateDialog(() {
-                            tempGm = pos;
-                            tempLl = _gmToLl(pos);
-                          });
-                        },
-                        zoomControlsEnabled: true,
-                        myLocationEnabled: false,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (tempLl == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text("Tap the map to select a location")),
-                              );
-                              return;
-                            }
-
-                            // make a non-null local copy to satisfy the analyzer across awaits
-                            final ll.LatLng selected = tempLl!;
-
-                            final addr = await _reverseGeocode(
-                                selected.latitude, selected.longitude);
-
-                            // avoid using context across async gap if widget was disposed
-                            if (!mounted) return;
-
-                            setState(() => shelterLatLng = selected);
-
-                            if (addr != null && addr.isNotEmpty) {
-                              _locationController.text = addr;
-                            } else {
-                              _locationController.text =
-                                  '${selected.latitude.toStringAsFixed(6)}, ${selected.longitude.toStringAsFixed(6)}';
-                            }
-
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Use this location'),
-                        ),
-                      ],
-                    )
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   @override
   void dispose() {
