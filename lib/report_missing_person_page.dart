@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/missing_person.dart';
+import '../utils/validators.dart';
 
 class ReportMissingPersonPage extends StatefulWidget {
   const ReportMissingPersonPage({super.key});
@@ -18,8 +19,12 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
   final _familyNameController = TextEditingController();
   final _familyContactController = TextEditingController();
 
+  // Controls when to show validation errors
+  AutovalidateMode _autoValidate = AutovalidateMode.disabled;
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      // Form is valid, create MissingPerson object
       final newPerson = MissingPerson(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
@@ -30,6 +35,11 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
         familyContact: _familyContactController.text,
       );
       Navigator.pop(context, newPerson);
+    } else {
+      // Show errors after first submit
+      setState(() {
+        _autoValidate = AutovalidateMode.onUserInteraction;
+      });
     }
   }
 
@@ -45,7 +55,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ✅ Header card
+            // Header card
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
@@ -75,7 +85,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
             ),
             const SizedBox(height: 20),
 
-            // ✅ Form Card
+            // Form Card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -85,6 +95,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                 padding: const EdgeInsets.all(20),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: _autoValidate,
                   child: Column(
                     children: [
                       TextFormField(
@@ -95,7 +106,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           border: OutlineInputBorder(),
                         ),
                         validator: (v) =>
-                            v!.isEmpty ? "Enter name" : null,
+                            Validators.validate(value: v ?? "", type: "name"),
                       ),
                       const SizedBox(height: 15),
 
@@ -107,6 +118,11 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           prefixIcon: Icon(Icons.numbers),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) {
+                          final age = int.tryParse(v ?? "");
+                          if (age == null || age <= 0) return "Enter valid age";
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 15),
 
@@ -117,6 +133,8 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           prefixIcon: Icon(Icons.location_on),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) =>
+                            Validators.validate(value: v ?? "", type: "place"),
                       ),
                       const SizedBox(height: 15),
 
@@ -128,6 +146,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           prefixIcon: Icon(Icons.description),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) => v!.isEmpty ? "Enter description" : null,
                       ),
                       const SizedBox(height: 15),
 
@@ -138,6 +157,8 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           prefixIcon: Icon(Icons.group),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) =>
+                            Validators.validate(value: v ?? "", type: "name"),
                       ),
                       const SizedBox(height: 15),
 
@@ -149,10 +170,11 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           prefixIcon: Icon(Icons.phone),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) =>
+                            Validators.validate(value: v ?? "", type: "mobile"),
                       ),
                       const SizedBox(height: 25),
 
-                      // ✅ Submit button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -165,8 +187,7 @@ class _ReportMissingPersonPageState extends State<ReportMissingPersonPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
                             foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

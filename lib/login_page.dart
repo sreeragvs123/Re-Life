@@ -1,6 +1,6 @@
-// lib/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import '../utils/validators.dart';
 import 'admin_home.dart';
 import 'volunteer_home.dart';
 import 'models/volunteer.dart';
@@ -15,9 +15,13 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  String _selectedRole = "ADMIN"; // default role
+  final _formKey = GlobalKey<FormState>();
+
+  String _selectedRole = "ADMIN"; // Default role
 
   void _login() {
+    if (!_formKey.currentState!.validate()) return;
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     var box = Hive.box('authBox');
@@ -26,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
       if (email == "admin@admin.com" && password == "admin123") {
         box.put('isLoggedIn', true);
         box.put('role', "ADMIN");
-
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const AdminHome()),
@@ -48,12 +51,11 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(
             builder: (_) => VolunteerHome(
               volunteer: Volunteer(
-  name: volunteersBox.get(email)['name'],
-  place: volunteersBox.get(email)['place'],
-  email: email,
-  password: volunteersBox.get(email)['password'],
-),
-
+                name: volunteersBox.get(email)['name'],
+                place: volunteersBox.get(email)['place'],
+                email: email,
+                password: volunteersBox.get(email)['password'],
+              ),
             ),
           ),
           (route) => false,
@@ -65,8 +67,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   @override
@@ -90,110 +93,122 @@ class _LoginPageState extends State<LoginPage> {
               color: Colors.white.withOpacity(0.95),
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.lock_outline,
-                      size: 64,
-                      color: Colors.indigo,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Disaster Relief Login",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade700,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.lock_outline,
+                        size: 64,
+                        color: Colors.indigo,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Role Selector
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      items: const [
-                        DropdownMenuItem(
-                            value: "ADMIN", child: Text("Admin")),
-                        DropdownMenuItem(
-                            value: "VOLUNTEER", child: Text("Volunteer")),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) setState(() => _selectedRole = value);
-                      },
-                      decoration: InputDecoration(
-                        labelText: "Select Role",
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 16),
+                      Text(
+                        "Disaster Relief Login",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.indigo.shade700,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 24),
 
-                    // Email
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: "Email",
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                      // Role Selector
+                      DropdownButtonFormField<String>(
+                        value: _selectedRole,
+                        items: const [
+                          DropdownMenuItem(
+                              value: "ADMIN", child: Text("Admin")),
+                          DropdownMenuItem(
+                              value: "VOLUNTEER", child: Text("Volunteer")),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) setState(() => _selectedRole = value);
+                        },
+                        decoration: InputDecoration(
+                          labelText: "Select Role",
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Password
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: "Password",
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                      // Email
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (val) =>
+                            Validators.validate(value: val ?? "", type: "email"),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (val) =>
+                            Validators.validate(value: val ?? "", type: "password", minLength: 5),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: const Color.fromARGB(255, 79, 139, 218),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                    // Login Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.indigo,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(fontSize: 18),
+                      // Go Back Button
+                      TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back, color: Colors.indigo),
+                        label: const Text(
+                          "Go Back",
+                          style: TextStyle(color: Colors.indigo),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Go Back Button
-                    TextButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back, color: Colors.indigo),
-                      label: const Text(
-                        "Go Back",
-                        style: TextStyle(color: Colors.indigo),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

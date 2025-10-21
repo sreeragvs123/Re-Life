@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'data/issue_data.dart';
 import 'models/issue_model.dart';
+import 'utils/validators.dart';
 
 class ReportIssuePage extends StatefulWidget {
   const ReportIssuePage({super.key});
@@ -27,13 +28,15 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
   String? location;
   Uint8List? attachment;
 
+  AutovalidateMode _autoValidate = AutovalidateMode.disabled;
+
   final List<String> categories = ["Bug", "Feature Request", "UI Issue", "Other"];
   final List<String> priorities = ["Low", "Medium", "High", "Urgent"];
 
   Future<void> pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg','png','mp4','mov'],
+      allowedExtensions: ['jpg', 'png', 'mp4', 'mov'],
     );
     if (result != null && result.files.single.bytes != null) {
       setState(() {
@@ -42,34 +45,60 @@ class _ReportIssuePageState extends State<ReportIssuePage> {
     }
   }
 
-Future<void> captureFromCamera() async {
-  if (kIsWeb) {
-    // Web: pick image from files
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-    );
-    if (result != null && result.files.single.bytes != null) {
-      setState(() {
-        attachment = result.files.single.bytes;
-      });
+  Future<void> captureFromCamera() async {
+    if (kIsWeb) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+      if (result != null && result.files.single.bytes != null) {
+        setState(() {
+          attachment = result.files.single.bytes;
+        });
+      }
+    } else {
+      final XFile? file = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+      if (file != null) {
+        final bytes = await file.readAsBytes();
+        setState(() {
+          attachment = bytes;
+        });
+      }
     }
-  } else {
-    // Mobile: use camera
-    final XFile? file = await _picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 1920,
-      maxHeight: 1080,
-    );
+  }
 
-    if (file != null) {
-      final bytes = await file.readAsBytes();
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      issues.add(Issue(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: name,
+        email: email,
+        phone: phone,
+        title: title,
+        description: description,
+        category: category,
+        priority: priority,
+        location: location,
+        attachment: attachment,
+        date: DateTime.now(),
+      ));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Issue reported successfully")),
+      );
+
+      Navigator.pop(context, true);
+    } else {
       setState(() {
-        attachment = bytes;
+        _autoValidate = AutovalidateMode.onUserInteraction;
       });
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +111,6 @@ Future<void> captureFromCamera() async {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ✅ Header info card
             Card(
               color: Colors.blue.shade50,
               shape: RoundedRectangleBorder(
@@ -111,7 +139,6 @@ Future<void> captureFromCamera() async {
             ),
             const SizedBox(height: 20),
 
-            // ✅ Form card
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
@@ -121,6 +148,7 @@ Future<void> captureFromCamera() async {
                 padding: const EdgeInsets.all(20),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: _autoValidate,
                   child: Column(
                     children: [
                       TextFormField(
@@ -129,8 +157,8 @@ Future<void> captureFromCamera() async {
                           prefixIcon: Icon(Icons.person),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) => v == null || v.isEmpty ? "Enter name" : null,
-                        onSaved: (v) => name = v!,
+                        validator: (v) => Validators.validate(value: v ?? "", type: "name"),
+                        onSaved: (v) => name = v!.trim(),
                       ),
                       const SizedBox(height: 15),
 
@@ -140,8 +168,8 @@ Future<void> captureFromCamera() async {
                           prefixIcon: Icon(Icons.email),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) => v == null || v.isEmpty ? "Enter email" : null,
-                        onSaved: (v) => email = v!,
+                        validator: (v) => Validators.validate(value: v ?? "", type: "email"),
+                        onSaved: (v) => email = v!.trim(),
                       ),
                       const SizedBox(height: 15),
 
@@ -152,6 +180,9 @@ Future<void> captureFromCamera() async {
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.phone,
+                        validator: (v) => v != null && v.isNotEmpty
+                            ? Validators.validate(value: v, type: "mobile")
+                            : null,
                         onSaved: (v) => phone = v,
                       ),
                       const SizedBox(height: 15),
@@ -162,8 +193,8 @@ Future<void> captureFromCamera() async {
                           prefixIcon: Icon(Icons.title),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) => v == null || v.isEmpty ? "Enter title" : null,
-                        onSaved: (v) => title = v!,
+                        validator: (v) => Validators.validate(value: v ?? "", type: "place", minLength: 3),
+                        onSaved: (v) => title = v!.trim(),
                       ),
                       const SizedBox(height: 15),
 
@@ -174,8 +205,8 @@ Future<void> captureFromCamera() async {
                           border: OutlineInputBorder(),
                         ),
                         maxLines: 3,
-                        validator: (v) => v == null || v.isEmpty ? "Enter description" : null,
-                        onSaved: (v) => description = v!,
+                        validator: (v) => Validators.validate(value: v ?? "", type: "place", minLength: 5),
+                        onSaved: (v) => description = v!.trim(),
                       ),
                       const SizedBox(height: 15),
 
@@ -191,6 +222,7 @@ Future<void> captureFromCamera() async {
                             .toList(),
                         onChanged: (v) => setState(() => category = v),
                         onSaved: (v) => category = v,
+                        validator: (v) => v == null ? "Select category" : null,
                       ),
                       const SizedBox(height: 15),
 
@@ -206,6 +238,7 @@ Future<void> captureFromCamera() async {
                             .toList(),
                         onChanged: (v) => setState(() => priority = v),
                         onSaved: (v) => priority = v,
+                        validator: (v) => v == null ? "Select priority" : null,
                       ),
                       const SizedBox(height: 15),
 
@@ -215,11 +248,13 @@ Future<void> captureFromCamera() async {
                           prefixIcon: Icon(Icons.location_on),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (v) => v != null && v.isNotEmpty
+                            ? Validators.validate(value: v, type: "place")
+                            : null,
                         onSaved: (v) => location = v,
                       ),
                       const SizedBox(height: 20),
 
-                      // ✅ Attachment buttons
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -254,35 +289,10 @@ Future<void> captureFromCamera() async {
                         ),
                       const SizedBox(height: 25),
 
-                      // ✅ Submit button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-
-                              issues.add(Issue(
-                                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                                name: name,
-                                email: email,
-                                phone: phone,
-                                title: title,
-                                description: description,
-                                category: category,
-                                priority: priority,
-                                location: location,
-                                attachment: attachment,
-                                date: DateTime.now(),
-                              ));
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Issue reported successfully")),
-                              );
-
-                              Navigator.pop(context, true);
-                            }
-                          },
+                          onPressed: _submitForm,
                           icon: const Icon(Icons.send),
                           label: const Text(
                             "Submit Issue",
