@@ -168,11 +168,11 @@ class _MapPickerPageState extends State<MapPickerPage> {
         title: const Text('Pick Location'),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 9.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 textStyle: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

@@ -252,7 +252,7 @@ class _EvacuationMapPageState extends State<EvacuationMapPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Evacuation Routes"),
-        backgroundColor: Colors.grey[850],
+        backgroundColor: const Color.fromARGB(255, 254, 254, 254),
       ),
       floatingActionButton: widget.isAdmin
           ? FloatingActionButton(

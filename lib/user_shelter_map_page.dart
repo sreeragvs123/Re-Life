@@ -199,7 +199,7 @@ class _UserShelterMapPageState extends State<UserShelterMapPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Available Shelters"),
-        backgroundColor: Colors.grey[850],
+        backgroundColor: const Color.fromARGB(255, 158, 215, 255),
       ),
       body: Column(
         children: [
